@@ -1,0 +1,22 @@
+﻿[*.cs]
+
+# CS8618: 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑添加 "required" 修饰符或声明为可为 null。
+dotnet_diagnostic.CS8618.severity = suggestion
+
+# JS03: Not all Properties in a class have a JsonPropertyNameAttribute (System.Text.Json)
+dotnet_diagnostic.JS03.severity = none
+
+# JN03: Not all Properties in a class have a JsonPropertyAttribute (Newtonsoft.Json)
+dotnet_diagnostic.JN03.severity = silent
+
+# JS02: Add JsonIgnoreAttribute to property (System.Text.Json)
+dotnet_diagnostic.JS02.severity = silent
+
+# JS01: Add JsonPropertyNameAttribute to property (System.Text.Json)
+dotnet_diagnostic.JS01.severity = silent
+
+# JN02: Add JsonIgnoreAttribute to property (Newtonsoft.Json)
+dotnet_diagnostic.JN02.severity = silent
+
+# JN01: Add JsonPropertyAttribute to property (Newtonsoft.Json)
+dotnet_diagnostic.JN01.severity = silent
