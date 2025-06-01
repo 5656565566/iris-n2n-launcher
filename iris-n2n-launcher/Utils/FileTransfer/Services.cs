@@ -127,7 +127,6 @@ public sealed class FileTransferService : IDisposable
 
         notifyIcon = new NotifyIcon
         {
-            Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath),
             Visible = true,
             BalloonTipTitle = "文件传输通知",
             BalloonTipIcon = ToolTipIcon.Info

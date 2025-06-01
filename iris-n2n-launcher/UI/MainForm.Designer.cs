@@ -36,26 +36,53 @@ namespace iris_n2n_launcher.UI
         {
             components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
+            N2NContextMenu = new ContextMenuStrip(components);
+            显示窗口ToolStripMenuItem = new ToolStripMenuItem();
+            关闭N2NToolStripMenuItem = new ToolStripMenuItem();
+            退出ToolStripMenuItem = new ToolStripMenuItem();
             SwitchButton = new Button();
             IPtextBox = new TextBox();
             RoomTextBox = new TextBox();
             SettingButton = new Button();
             label1 = new Label();
             label2 = new Label();
-            NotifyIcon = new NotifyIcon(components);
-            ContextMenu = new ContextMenuStrip(components);
-            显示窗口ToolStripMenuItem = new ToolStripMenuItem();
-            关闭N2NToolStripMenuItem = new ToolStripMenuItem();
-            退出ToolStripMenuItem = new ToolStripMenuItem();
             StopButton = new Button();
             ToolButtom = new Button();
-            toolTip = new ToolTip(components);
             UrlJoinbutton = new Button();
             panel6 = new Panel();
             MultipleEdgeButton = new Button();
-            ContextMenu.SuspendLayout();
+            N2NNotifyIcon = new NotifyIcon(components);
+            N2NContextMenu.SuspendLayout();
             panel6.SuspendLayout();
             SuspendLayout();
+            // 
+            // N2NContextMenu
+            // 
+            N2NContextMenu.ImageScalingSize = new Size(20, 20);
+            N2NContextMenu.Items.AddRange(new ToolStripItem[] { 显示窗口ToolStripMenuItem, 关闭N2NToolStripMenuItem, 退出ToolStripMenuItem });
+            N2NContextMenu.Name = "ContextMenu";
+            N2NContextMenu.Size = new Size(181, 92);
+            // 
+            // 显示窗口ToolStripMenuItem
+            // 
+            显示窗口ToolStripMenuItem.Name = "显示窗口ToolStripMenuItem";
+            显示窗口ToolStripMenuItem.Size = new Size(180, 22);
+            显示窗口ToolStripMenuItem.Text = "显示窗口";
+            显示窗口ToolStripMenuItem.Click += 显示窗口ToolStripMenuItem_Click;
+            // 
+            // 关闭N2NToolStripMenuItem
+            // 
+            关闭N2NToolStripMenuItem.Name = "关闭N2NToolStripMenuItem";
+            关闭N2NToolStripMenuItem.Size = new Size(180, 22);
+            关闭N2NToolStripMenuItem.Text = "关闭N2N";
+            关闭N2NToolStripMenuItem.Click += 关闭N2NToolStripMenuItem_Click;
+            // 
+            // 退出ToolStripMenuItem
+            // 
+            退出ToolStripMenuItem.Name = "退出ToolStripMenuItem";
+            退出ToolStripMenuItem.Size = new Size(180, 22);
+            退出ToolStripMenuItem.Text = "退出";
+            退出ToolStripMenuItem.Click += 退出ToolStripMenuItem_Click;
             // 
             // SwitchButton
             // 
@@ -122,42 +149,6 @@ namespace iris_n2n_launcher.UI
             label2.TabIndex = 5;
             label2.Text = "自定义房间名";
             // 
-            // NotifyIcon
-            // 
-            NotifyIcon.ContextMenuStrip = ContextMenu;
-            NotifyIcon.Icon = (Icon)resources.GetObject("NotifyIcon.Icon");
-            NotifyIcon.Text = "双击显示窗口\r\n";
-            NotifyIcon.Visible = true;
-            NotifyIcon.MouseDoubleClick += NotifyIcon_MouseDoubleClick;
-            // 
-            // ContextMenu
-            // 
-            ContextMenu.ImageScalingSize = new Size(20, 20);
-            ContextMenu.Items.AddRange(new ToolStripItem[] { 显示窗口ToolStripMenuItem, 关闭N2NToolStripMenuItem, 退出ToolStripMenuItem });
-            ContextMenu.Name = "ContextMenu";
-            ContextMenu.Size = new Size(128, 70);
-            // 
-            // 显示窗口ToolStripMenuItem
-            // 
-            显示窗口ToolStripMenuItem.Name = "显示窗口ToolStripMenuItem";
-            显示窗口ToolStripMenuItem.Size = new Size(127, 22);
-            显示窗口ToolStripMenuItem.Text = "显示窗口";
-            显示窗口ToolStripMenuItem.Click += 显示窗口ToolStripMenuItem_Click;
-            // 
-            // 关闭N2NToolStripMenuItem
-            // 
-            关闭N2NToolStripMenuItem.Name = "关闭N2NToolStripMenuItem";
-            关闭N2NToolStripMenuItem.Size = new Size(127, 22);
-            关闭N2NToolStripMenuItem.Text = "关闭N2N";
-            关闭N2NToolStripMenuItem.Click += 关闭N2NToolStripMenuItem_Click;
-            // 
-            // 退出ToolStripMenuItem
-            // 
-            退出ToolStripMenuItem.Name = "退出ToolStripMenuItem";
-            退出ToolStripMenuItem.Size = new Size(127, 22);
-            退出ToolStripMenuItem.Text = "退出";
-            退出ToolStripMenuItem.Click += 退出ToolStripMenuItem_Click;
-            // 
             // StopButton
             // 
             StopButton.Enabled = false;
@@ -217,6 +208,13 @@ namespace iris_n2n_launcher.UI
             MultipleEdgeButton.UseVisualStyleBackColor = true;
             MultipleEdgeButton.Click += MultipleEdgeButton_Click;
             // 
+            // N2NNotifyIcon
+            // 
+            N2NNotifyIcon.ContextMenuStrip = N2NContextMenu;
+            N2NNotifyIcon.Icon = (Icon)resources.GetObject("N2NNotifyIcon.Icon");
+            N2NNotifyIcon.Text = "N2N启动器";
+            N2NNotifyIcon.Visible = true;
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(10F, 21F);
@@ -245,7 +243,7 @@ namespace iris_n2n_launcher.UI
             FormClosing += MainForm_FormClosing;
             Load += MainForm_Load;
             SizeChanged += MainForm_SizeChanged;
-            ContextMenu.ResumeLayout(false);
+            N2NContextMenu.ResumeLayout(false);
             panel6.ResumeLayout(false);
             ResumeLayout(false);
             PerformLayout();
@@ -256,19 +254,18 @@ namespace iris_n2n_launcher.UI
         private System.Windows.Forms.Button SettingButton;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.NotifyIcon NotifyIcon;
-        private System.Windows.Forms.ContextMenuStrip ContextMenu;
+        private System.Windows.Forms.ContextMenuStrip N2NContextMenu;
         private System.Windows.Forms.ToolStripMenuItem 显示窗口ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 退出ToolStripMenuItem;
         private System.Windows.Forms.TextBox RoomTextBox;
         private System.Windows.Forms.Button StopButton;
         private System.Windows.Forms.Button ToolButtom;
-        private System.Windows.Forms.ToolTip toolTip;
         private System.Windows.Forms.Button UrlJoinbutton;
         public Button SwitchButton;
         private Panel panel6;
         private Button MultipleEdgeButton;
         private ToolStripMenuItem 关闭N2NToolStripMenuItem;
+        private NotifyIcon N2NNotifyIcon;
     }
 }
 

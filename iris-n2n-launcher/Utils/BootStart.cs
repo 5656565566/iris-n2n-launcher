@@ -38,7 +38,7 @@ internal class BootStart
             taskDefinition.Actions.Add(new ExecAction(
                 path: $"\"{exePath}\"",
                 arguments: "--boot",
-                workingDirectory: $"\"{exeDirectory}\""));
+                workingDirectory: exeDirectory));
 
             taskDefinition.Triggers.Add(new LogonTrigger { Delay = TimeSpan.FromSeconds(5) });
 

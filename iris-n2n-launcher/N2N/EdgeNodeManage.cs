@@ -111,6 +111,7 @@ public class EdgeNodeManage : IDisposable
 
         if (!_activeNodes.TryAdd(id, nodeInfo))
         {
+            usedAdapters.Remove(parameters.DeviceName);
             return 13; // –≈œ¢ÃÌº” ß∞‹
         }
 

@@ -14,7 +14,7 @@ public partial class MainForm : Form
     private readonly EdgeNodeManage edgeNodeManage = EdgeNodeManage.Instance;
     private readonly string nodeName = "n2n";
     private ConfigManager configManager = ConfigManager.Instance;
-    private static TapNetworkManager tapNetworkManager = new();
+    private static readonly TapNetworkManager tapNetworkManager = new();
     private static readonly MinecraftLanProxy minecraftLanProxy = MinecraftLanProxy.Instance;
     private static readonly FileTransferService fileTransferService = FileTransferService.Instance;
     private static int seletMode = 0;
@@ -27,6 +27,7 @@ public partial class MainForm : Form
         ReadConfig();
 
         Shown += MainForm_Shown;
+        N2NNotifyIcon.MouseDoubleClick += NotifyIcon_MouseDoubleClick;
     }
 
     private void MainForm_Shown(object? sender, EventArgs e)
@@ -39,7 +40,6 @@ public partial class MainForm : Form
         mianInfoThread.Start();
 
     }
-
 
     private void MianInfo()
     {
@@ -140,15 +140,18 @@ public partial class MainForm : Form
             string tipTitle = "N2N启动器已经最小化";
             string tipContent = "双击托盘图标显示窗口^w^";
             ToolTipIcon tipType = ToolTipIcon.Info;
-            NotifyIcon.ShowBalloonTip(tipShowMilliseconds, tipTitle, tipContent, tipType);
-            Hide();
+            N2NNotifyIcon.ShowBalloonTip(tipShowMilliseconds, tipTitle, tipContent, tipType);
+
+            ShowInTaskbar = false;
         }
     }
 
-    private void NotifyIcon_MouseDoubleClick(object sender, MouseEventArgs e)
+    private void NotifyIcon_MouseDoubleClick(object? sender, MouseEventArgs e)
     {
-        Show();
+        ShowInTaskbar = true;
+
         WindowState = FormWindowState.Normal;
+        BringToFront();
     }
 
     private void MainForm_Load(object sender, EventArgs e)
@@ -159,7 +162,8 @@ public partial class MainForm : Form
 
     private void 显示窗口ToolStripMenuItem_Click(object sender, EventArgs e)
     {
-        Show();
+        ShowInTaskbar = true;
+
         WindowState = FormWindowState.Normal;
     }
 
@@ -201,6 +205,12 @@ public partial class MainForm : Form
 
         string configMame = configManager.LoadConfig<Configuration>("config").ConfigName;
         N2NConfiguration n2NConfiguration = configManager.LoadConfig<N2NConfiguration>(configMame);
+
+        if (n2NConfiguration.SuperNodeHostAndPort == "")
+        {
+            MessageBox.Show("请先选择一个服务器吧...");
+            return;
+        }
 
         AddEdge(n2NConfiguration);
     }

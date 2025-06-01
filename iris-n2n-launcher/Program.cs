@@ -131,8 +131,9 @@ internal static class Program
         AutoUpdater.ShowRemindLaterButton = true;
         AutoUpdater.LetUserSelectRemindLater = true;
         AutoUpdater.TopMost = true;
-        AutoUpdater.ClearAppDirectory = true;
         AutoUpdater.Synchronous = true;
+
+        AutoUpdater.ClearAppDirectory = false; // 不清理目录
 
         if (config.VersionUpdate)
         {
