@@ -1,4 +1,5 @@
 using Newtonsoft.Json;
+using System.Reflection;
 
 namespace iris_n2n_launcher.Config;
 
@@ -156,5 +157,34 @@ public sealed class ConfigManager
         // 转换一下文件名称
         var safeName = string.Join("_", configName.Split(Path.GetInvalidFileNameChars()));
         return Path.Combine(_path, $"{safeName}.json");
+    }
+
+    /// <summary>
+    /// 检查两个对象是否有差异
+    /// </summary>
+    /// <typeparam name="T">对象类型</typeparam>
+    /// <param name="original">原始对象</param>
+    /// <param name="modified">修改后的对象</param>
+    /// <returns>是否有差异</returns>
+    public bool HasChanges<T>(T original, T modified)
+    {
+        if (ReferenceEquals(original, null) || ReferenceEquals(modified, null))
+            return !ReferenceEquals(original, modified);
+
+        var properties = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+
+        foreach (var property in properties)
+        {
+            if (property.GetIndexParameters().Length > 0)
+                continue;
+
+            var originalValue = property.GetValue(original);
+            var modifiedValue = property.GetValue(modified);
+
+            if (!Equals(originalValue, modifiedValue))
+                return true;
+        }
+
+        return false;
     }
 }

@@ -1211,9 +1211,7 @@
             Icon = (Icon)resources.GetObject("$this.Icon");
             Margin = new Padding(2, 3, 2, 3);
             MaximizeBox = false;
-            MaximumSize = new Size(715, 486);
             MinimizeBox = false;
-            MinimumSize = new Size(715, 486);
             Name = "SettingForm";
             StartPosition = FormStartPosition.CenterScreen;
             FormClosed += SettingForm_FormClosed;

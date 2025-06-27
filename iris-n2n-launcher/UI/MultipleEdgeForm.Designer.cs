@@ -102,11 +102,10 @@
             ClientSize = new Size(784, 441);
             Controls.Add(tableLayoutPanel1);
             Font = new Font("Microsoft YaHei UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 134);
+            FormBorderStyle = FormBorderStyle.FixedSingle;
             Icon = (Icon)resources.GetObject("$this.Icon");
             Margin = new Padding(4);
             MaximizeBox = false;
-            MaximumSize = new Size(800, 480);
-            MinimumSize = new Size(800, 480);
             Name = "MultipleEdgeForm";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "多开节点";

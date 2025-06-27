@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using iris_n2n_launcher.TAP;
 
 namespace iris_n2n_launcher.Utils;
 
@@ -24,8 +25,19 @@ public sealed class MinecraftLanProxy : IDisposable
 
     private readonly object _ipLock = new();
     public string? _broadcastIp;
+    private List<string> _localIps = new();
 
     private MinecraftLanProxy() { }
+
+    private void RefreshLocalIPs() // 不负责本地 ip 变更但是 N2N 不变更的情况
+    {
+        _localIps = TapNetworkManager.GetAllLocalIPs();
+        _localIps.Add("127.0.0.1"); // 确保包含回环地址
+    }
+    private bool IsLocalMachineIp(IPAddress address)
+    {
+        return _localIps.Contains(address.ToString());
+    }
 
     public void SetBroadcastIp(string ip, string subnetMask = "255.255.255.0")
     {
@@ -61,6 +73,7 @@ public sealed class MinecraftLanProxy : IDisposable
         {
             if (_cts != null) return;
 
+            RefreshLocalIPs();
             ValidateBroadcastIp();
             InitializeNetworkComponents();
 
@@ -149,7 +162,11 @@ public sealed class MinecraftLanProxy : IDisposable
     private void ProcessIncomingMessage(UdpReceiveResult result)
     {
         var message = Encoding.UTF8.GetString(result.Buffer);
-        var remoteIp = result.RemoteEndPoint.Address.ToString();
+
+        if (!IsLocalMachineIp(result.RemoteEndPoint.Address))
+        {
+            return; // 非本机IP的广播直接丢弃
+        }
 
         if (!message.StartsWith("[MOTD]") || !message.Contains("[AD]"))
             return;

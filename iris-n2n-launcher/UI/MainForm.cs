@@ -13,12 +13,13 @@ public partial class MainForm : Form
 {
     private readonly EdgeNodeManage edgeNodeManage = EdgeNodeManage.Instance;
     private readonly string nodeName = "n2n";
-    private ConfigManager configManager = ConfigManager.Instance;
+    private readonly ConfigManager configManager = ConfigManager.Instance;
     private static readonly TapNetworkManager tapNetworkManager = new();
     private static readonly MinecraftLanProxy minecraftLanProxy = MinecraftLanProxy.Instance;
     private static readonly FileTransferService fileTransferService = FileTransferService.Instance;
     private static int seletMode = 0;
     public string? share;
+    public bool exitN2N = false; // 正常退出标志位
 
     public MainForm(int SeletMode)
     {
@@ -38,7 +39,6 @@ public partial class MainForm : Form
         };
 
         mianInfoThread.Start();
-
     }
 
     private void MianInfo()
@@ -97,6 +97,28 @@ public partial class MainForm : Form
                 StopMainEdge();
             }
         }
+
+        if (active == -1)
+        {
+            foreach (var node in nodes)
+            {
+                if(node.Key == "n2n")
+                {
+                    try
+                    {
+                        IPtextBox.Text = node.Value.Status.ip4addr;
+                    }
+                    catch
+                    {
+
+                    }
+                    SwitchButton.Text = "正在运行";
+                    SwitchButton.Enabled = false;
+                    StopButton.Enabled = true;
+                }
+            }
+
+        }
     }
 
     private void ProcessSharingLink(string link)
@@ -142,33 +164,45 @@ public partial class MainForm : Form
             ToolTipIcon tipType = ToolTipIcon.Info;
             N2NNotifyIcon.ShowBalloonTip(tipShowMilliseconds, tipTitle, tipContent, tipType);
 
-            ShowInTaskbar = false;
+            Hide();
         }
+    }
+
+    private new void Hide()
+    {
+        base.Hide();
+        ShowInTaskbar = false;
+    }
+
+    private new void Show()
+    {
+        ShowInTaskbar = true;
+        base.Show();
     }
 
     private void NotifyIcon_MouseDoubleClick(object? sender, MouseEventArgs e)
     {
-        ShowInTaskbar = true;
-
+        Show();
         WindowState = FormWindowState.Normal;
         BringToFront();
     }
 
     private void MainForm_Load(object sender, EventArgs e)
     {
-        if (seletMode == 1) { SwitchButton_Click(null, EventArgs.Empty); WindowState = FormWindowState.Minimized; }
+        if (seletMode == 1) { SwitchButton_Click(null, EventArgs.Empty); Hide();  }
         if (seletMode == 2) { ProcessSharingLink(share!); }
+        if (seletMode == 3) { IPtextBox.Invoke(new Action(() => { MianEdge(); })); }
     }
 
     private void 显示窗口ToolStripMenuItem_Click(object sender, EventArgs e)
     {
-        ShowInTaskbar = true;
-
+        Show();
         WindowState = FormWindowState.Normal;
     }
 
     private void 退出ToolStripMenuItem_Click(object sender, EventArgs e)
     {
+        exitN2N = true;
         Close();
     }
 
@@ -177,20 +211,25 @@ public partial class MainForm : Form
     /// </summary>
     protected override void WndProc(ref Message m)
     {
-        const int WM_ENDSESSION = 0x0016;
         const int WM_QUERYENDSESSION = 0x0011;
+        const int WM_ENDSESSION = 0x0016;
+
         switch (m.Msg)
         {
-            //此消息在OnFormClosing之前
             case WM_QUERYENDSESSION:
-                Application.Exit();
+                exitN2N = true;
+                Environment.Exit(0);
                 break;
+
             case WM_ENDSESSION:
-                Application.Exit();
-                break;
-            default:
+                if (m.WParam != IntPtr.Zero)
+                {
+                    exitN2N = true;
+                    Environment.Exit(0);
+                }
                 break;
         }
+
         base.WndProc(ref m);
     }
 
@@ -306,7 +345,7 @@ public partial class MainForm : Form
             {
                 if (tap.Id == nodeInfo.Parameters.DeviceName)
                 {
-                    IPtextBox.Text = tap.IpAddresses.ToString();
+                    IPtextBox.Text = tap.IpAddresses[0].ToString(); // IPV4
                 }
             }
 
@@ -327,7 +366,14 @@ public partial class MainForm : Form
             minecraftLanProxy.SetBroadcastIp(IPtextBox.Text);
             if (configManager.LoadConfig<Configuration>("config").Minecraft)
             {
-                minecraftLanProxy.Start();
+                try
+                {
+                    minecraftLanProxy.Start();
+                }
+                catch
+                {
+                    minecraftLanProxy.Stop();
+                }
             }
             else
             {
@@ -353,20 +399,34 @@ public partial class MainForm : Form
             if (result == DialogResult.No)
             {
                 e.Cancel = true;
+                return;
             }
         }
+        exitN2N = true;
     }
 
     private void SettingButton_Click(object sender, EventArgs e)
     {
         SettingForm settingFrom = new();
         settingFrom.ShowDialog();
-        ReadConfig();
+        if (settingFrom.SettingChanging() == 1) // TODO 处理不同的配置文件变更提示
+        {
+            ReadConfig();
+
+            if (StopButton.Enabled)
+            {
+                StopMainEdge();
+
+                string configMame = configManager.LoadConfig<Configuration>("config").ConfigName;
+                N2NConfiguration n2NConfiguration = configManager.LoadConfig<N2NConfiguration>(configMame);
+
+                AddEdge(n2NConfiguration);
+            }
+        }
     }
 
     private void StopButton_Click(object? sender, EventArgs e)
     {
-
         StopMainEdge();
     }
 

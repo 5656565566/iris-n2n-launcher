@@ -225,4 +225,36 @@ internal class TapNetworkManager
 
         return await exeHelper.RunCommandAsync(tapinstall, $"remove @{deviceId}", path, "Removed");
     }
+    /// <summary>
+    /// 获取本机所有的IP地址（包括IPv4和IPv6）
+    /// </summary>
+    /// <returns>包含所有IP地址的列表</returns>
+    public static List<string> GetAllLocalIPs()
+    {
+        List<string> ips = new List<string>();
+        NetworkInterface[] adapters = NetworkInterface.GetAllNetworkInterfaces();
+
+        foreach (NetworkInterface adapter in adapters)
+        {
+            // 跳过非活动网卡和回环接口
+            if (adapter.OperationalStatus != OperationalStatus.Up ||
+                adapter.NetworkInterfaceType == NetworkInterfaceType.Loopback)
+            {
+                continue;
+            }
+
+            IPInterfaceProperties properties = adapter.GetIPProperties();
+            foreach (UnicastIPAddressInformation ip in properties.UnicastAddresses)
+            {
+                // 添加所有有效的IP地址（包括IPv4和IPv6）
+                if (ip.Address.AddressFamily == AddressFamily.InterNetwork ||
+                    ip.Address.AddressFamily == AddressFamily.InterNetworkV6)
+                {
+                    ips.Add(ip.Address.ToString());
+                }
+            }
+        }
+
+        return ips;
+    }
 }

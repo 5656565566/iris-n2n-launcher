@@ -292,9 +292,9 @@
             // tabPage4
             // 
             tabPage4.Controls.Add(tableLayoutPanel2);
-            tabPage4.Location = new Point(4, 28);
+            tabPage4.Location = new Point(4, 26);
             tabPage4.Name = "tabPage4";
-            tabPage4.Size = new Size(726, 379);
+            tabPage4.Size = new Size(726, 381);
             tabPage4.TabIndex = 5;
             tabPage4.Text = "端口映射";
             tabPage4.UseVisualStyleBackColor = true;
@@ -317,7 +317,7 @@
             tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Percent, 41F));
             tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Percent, 18F));
             tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Percent, 5F));
-            tableLayoutPanel2.Size = new Size(726, 379);
+            tableLayoutPanel2.Size = new Size(726, 381);
             tableLayoutPanel2.TabIndex = 4;
             // 
             // TcpUdpForwDataGridView
@@ -329,7 +329,7 @@
             TcpUdpForwDataGridView.RowHeadersWidth = 51;
             tableLayoutPanel2.SetRowSpan(TcpUdpForwDataGridView, 5);
             TcpUdpForwDataGridView.RowTemplate.Height = 27;
-            TcpUdpForwDataGridView.Size = new Size(665, 373);
+            TcpUdpForwDataGridView.Size = new Size(665, 375);
             TcpUdpForwDataGridView.TabIndex = 0;
             // 
             // TcpUdpForwDelButton
@@ -348,7 +348,7 @@
             // 
             TcpUdpForwReButton.FlatStyle = FlatStyle.Flat;
             TcpUdpForwReButton.Image = Properties.Resources.刷新;
-            TcpUdpForwReButton.Location = new Point(674, 293);
+            TcpUdpForwReButton.Location = new Point(674, 294);
             TcpUdpForwReButton.Margin = new Padding(3, 2, 3, 2);
             TcpUdpForwReButton.Name = "TcpUdpForwReButton";
             TcpUdpForwReButton.Size = new Size(48, 48);
@@ -452,12 +452,11 @@
             ClientSize = new Size(734, 411);
             Controls.Add(tabControl1);
             Font = new Font("黑体", 13.8F);
+            FormBorderStyle = FormBorderStyle.FixedSingle;
             Icon = (Icon)resources.GetObject("$this.Icon");
             Margin = new Padding(5, 6, 5, 6);
             MaximizeBox = false;
-            MaximumSize = new Size(750, 450);
             MinimizeBox = false;
-            MinimumSize = new Size(750, 450);
             Name = "ToolForm";
             ShowInTaskbar = false;
             StartPosition = FormStartPosition.CenterScreen;

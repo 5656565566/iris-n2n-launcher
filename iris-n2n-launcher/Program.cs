@@ -13,6 +13,7 @@ namespace iris_n2n_launcher;
 internal static class Program
 {
     private static readonly ExeHelper exeHelper = ExeHelper.Instance;
+    private static readonly LogHelper logHelper = LogHelper.Instance;
     private static readonly Mutex mutex = new(true, "{3A3BC4F2-FA1E-4BB5-B01A-65C52D6A154C}");
     private static readonly ConfigManager configManager = ConfigManager.Instance;
     private static readonly TcpUdpForw tcpUdpForw = TcpUdpForw.Instance;
@@ -163,7 +164,24 @@ internal static class Program
                 fileTransferService.Start();
             }
 
-            Application.Run(mainForm);
+            while (!mainForm.exitN2N)
+            {
+                try
+                {
+                    Application.Run(mainForm);
+                    if (!mainForm.exitN2N)
+                    {
+                        MessageBox.Show("哎呀，发生异常退出\n帮你重启了...", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    mainForm = new MainForm(3);
+                    MessageBox.Show("哎呀，主界面崩溃了\n帮你重启了...", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    logHelper.Error(ex);
+                }
+            }
+
         }
         else
         {

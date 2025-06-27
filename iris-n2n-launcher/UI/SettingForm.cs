@@ -13,6 +13,7 @@ public partial class SettingForm : Form
 
     private static readonly ConfigManager configManager = ConfigManager.Instance;
     private static Configuration config = configManager.LoadConfig<Configuration>("config");
+    private static N2NConfiguration _originalN2Nconfig = configManager.LoadConfig<N2NConfiguration>(config.ConfigName);
     private static N2NConfiguration N2Nconfig = configManager.LoadConfig<N2NConfiguration>(config.ConfigName);
     private static Dictionary<string, int> serverPing = [];
     private static readonly TapNetworkManager tapNetworkManager = new();
@@ -20,6 +21,7 @@ public partial class SettingForm : Form
     private static List<NetworkAdapterInfo> networkAdapters = [];
     private static readonly TcpUdpForw tcpUdpForw = TcpUdpForw.Instance;
     private static string[] version = ["0", "0", "0", "0"];
+    private static int configurationChangeStatus = 0;
 
     public void BindEvents()
     {
@@ -238,6 +240,11 @@ public partial class SettingForm : Form
         ConfigListBox.SelectedIndexChanged += ConfigListBox_SelectedIndexChanged;
     }
 
+    public int SettingChanging()
+    {
+        return configurationChangeStatus;
+    }
+
     private void ReadConfig()
     {
         ConfigListBox.SelectedIndexChanged -= ConfigListBox_SelectedIndexChanged;
@@ -399,7 +406,7 @@ public partial class SettingForm : Form
             {
                 if (changelog == null)
                 {
-                    richTextBox3.Text = $"服务器开小差了，稍后再来看看吧?\n当前软件版本 xxx 最新版 {latestVersion.Version}";
+                    richTextBox3.Text = $"服务器开小差了，稍后再来看看吧?\n软件最新版 {latestVersion.Version}";
                     return;
                 }
                 richTextBox3.Text = changelog.Changelog;
@@ -416,6 +423,12 @@ public partial class SettingForm : Form
     private void SettingForm_FormClosed(object sender, FormClosedEventArgs e)
     {
         WriteConfig();
+
+        if (configManager.HasChanges<N2NConfiguration>(_originalN2Nconfig, N2Nconfig))
+        {
+            configurationChangeStatus = 1;
+        }
+
     }
 
     private void SeverListComboBox_TextChanged(object? sender, EventArgs e)
@@ -824,7 +837,7 @@ public partial class SettingForm : Form
         }
         else
         {
-            configManager.SaveConfig(userInput, new N2NConfiguration());
+            configManager.SaveConfig(userInput, N2Nconfig);
 
             ConfigListBox.Items.Add(userInput);
             UpdataConfigList();
@@ -868,6 +881,8 @@ public partial class SettingForm : Form
         }
 
         WriteConfig();
+
+        configurationChangeStatus = 1; // 通知配置更改
 
         config.ConfigName = ConfigListBox.SelectedItem!.ToString()!;
         configManager.SaveConfig("config", config);

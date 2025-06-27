@@ -61,26 +61,26 @@ namespace iris_n2n_launcher.UI
             N2NContextMenu.ImageScalingSize = new Size(20, 20);
             N2NContextMenu.Items.AddRange(new ToolStripItem[] { 显示窗口ToolStripMenuItem, 关闭N2NToolStripMenuItem, 退出ToolStripMenuItem });
             N2NContextMenu.Name = "ContextMenu";
-            N2NContextMenu.Size = new Size(181, 92);
+            N2NContextMenu.Size = new Size(128, 70);
             // 
             // 显示窗口ToolStripMenuItem
             // 
             显示窗口ToolStripMenuItem.Name = "显示窗口ToolStripMenuItem";
-            显示窗口ToolStripMenuItem.Size = new Size(180, 22);
+            显示窗口ToolStripMenuItem.Size = new Size(127, 22);
             显示窗口ToolStripMenuItem.Text = "显示窗口";
             显示窗口ToolStripMenuItem.Click += 显示窗口ToolStripMenuItem_Click;
             // 
             // 关闭N2NToolStripMenuItem
             // 
             关闭N2NToolStripMenuItem.Name = "关闭N2NToolStripMenuItem";
-            关闭N2NToolStripMenuItem.Size = new Size(180, 22);
+            关闭N2NToolStripMenuItem.Size = new Size(127, 22);
             关闭N2NToolStripMenuItem.Text = "关闭N2N";
             关闭N2NToolStripMenuItem.Click += 关闭N2NToolStripMenuItem_Click;
             // 
             // 退出ToolStripMenuItem
             // 
             退出ToolStripMenuItem.Name = "退出ToolStripMenuItem";
-            退出ToolStripMenuItem.Size = new Size(180, 22);
+            退出ToolStripMenuItem.Size = new Size(127, 22);
             退出ToolStripMenuItem.Text = "退出";
             退出ToolStripMenuItem.Click += 退出ToolStripMenuItem_Click;
             // 
@@ -235,8 +235,6 @@ namespace iris_n2n_launcher.UI
             Icon = (Icon)resources.GetObject("$this.Icon");
             Margin = new Padding(6, 5, 6, 5);
             MaximizeBox = false;
-            MaximumSize = new Size(262, 250);
-            MinimumSize = new Size(262, 250);
             Name = "MainForm";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "N2N";

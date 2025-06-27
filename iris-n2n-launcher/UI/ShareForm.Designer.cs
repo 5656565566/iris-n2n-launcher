@@ -117,11 +117,10 @@
             Controls.Add(groupBox2);
             Controls.Add(groupBox1);
             Font = new Font("黑体", 13.8F);
+            FormBorderStyle = FormBorderStyle.FixedSingle;
             Margin = new Padding(4);
             MaximizeBox = false;
-            MaximumSize = new Size(562, 342);
             MinimizeBox = false;
-            MinimumSize = new Size(562, 342);
             Name = "ShareForm";
             ShowIcon = false;
             ShowInTaskbar = false;
