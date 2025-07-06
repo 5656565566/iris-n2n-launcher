@@ -1,6 +1,7 @@
 ﻿using iris_n2n_launcher.Config;
 using iris_n2n_launcher.N2N;
 using iris_n2n_launcher.Utils;
+using System.Linq;
 
 namespace iris_n2n_launcher.UI;
 
@@ -109,23 +110,18 @@ public partial class MultipleEdgeForm : Form
             return;
         }
 
-        var config = configManager.LoadConfig<Configuration>("config");
-        var n2NConfiguration = configManager.LoadConfig<N2NConfiguration>(config.ConfigName);
+        var n2NConfiguration = SelectConfigForm.ShowInput();
 
-        var room = InputForm.ShowInput("输入一个新的房间名", "");
-
-        if (room == null || room == "")
+        if (n2NConfiguration == null)
         {
             return;
         }
 
-        if (GetColumnData(NodeDataGridView, 1).Contains(room))
+        if (GetColumnData(NodeDataGridView, 1).Contains(n2NConfiguration.Community))
         {
             MessageBox.Show("房间名 不能重复");
             return;
         }
-
-        n2NConfiguration.Community = room;
 
         int states = await edgeNodeManage.StartNodeAsync(nodeName, n2NConfiguration);
 

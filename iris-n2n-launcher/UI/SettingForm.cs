@@ -12,9 +12,10 @@ public partial class SettingForm : Form
 {
 
     private static readonly ConfigManager configManager = ConfigManager.Instance;
-    private static Configuration config = configManager.LoadConfig<Configuration>("config");
-    private static N2NConfiguration _originalN2Nconfig = configManager.LoadConfig<N2NConfiguration>(config.ConfigName);
-    private static N2NConfiguration N2Nconfig = configManager.LoadConfig<N2NConfiguration>(config.ConfigName);
+    private static Configuration config;
+    private static N2NConfiguration _originalN2Nconfig;
+    private static string _originalConfigName;
+    private static N2NConfiguration N2Nconfig;
     private static Dictionary<string, int> serverPing = [];
     private static readonly TapNetworkManager tapNetworkManager = new();
     private static readonly EdgeNodeManage edgeNodeManage = EdgeNodeManage.Instance;
@@ -62,6 +63,9 @@ public partial class SettingForm : Form
 
     private void DataView()
     {
+        config = configManager.LoadConfig<Configuration>("config");
+        N2Nconfig = configManager.LoadConfig<N2NConfiguration>(config.ConfigName);
+
         FirewallEnabledOnExitCheckBox.Checked = config.FirewallEnabledOnExit;
         DisableFirewallOnRunCheckBox.Checked = config.DisableFirewallOnRun;
 
@@ -238,6 +242,11 @@ public partial class SettingForm : Form
         BindEvents();
 
         ConfigListBox.SelectedIndexChanged += ConfigListBox_SelectedIndexChanged;
+
+        configurationChangeStatus = 0;
+
+        _originalN2Nconfig = configManager.LoadConfig<N2NConfiguration>(config.ConfigName);
+        _originalConfigName = config.ConfigName;
     }
 
     public int SettingChanging()
@@ -522,9 +531,17 @@ public partial class SettingForm : Form
             string _combined = combined;
             int _port = 7654;
 
-            if (combined.Contains(';'))
+            if (combined.Contains(':'))
             {
-                _combined = combined.Split(';')[0];
+                _combined = combined.Split(':')[0];
+                try
+                {
+                    _port = int.Parse(_combined.Split(':')[1]);
+                }
+                catch
+                {
+
+                }
             }
 
             var replies = await NetworkTool.PingHostAsync(_combined);
@@ -563,6 +580,11 @@ public partial class SettingForm : Form
             if (value == 999)
             {
                 label7.Text = "不可用";
+            }
+
+            if (value == -1)
+            {
+                label7.Text = "错误";
             }
 
             else
@@ -882,9 +904,17 @@ public partial class SettingForm : Form
 
         WriteConfig();
 
-        configurationChangeStatus = 1; // 通知配置更改
-
         config.ConfigName = ConfigListBox.SelectedItem!.ToString()!;
+
+        if (config.ConfigName != _originalConfigName)
+        {
+            configurationChangeStatus = 1;
+        }
+        else
+        {
+            configurationChangeStatus = 0;
+        }
+
         configManager.SaveConfig("config", config);
 
         ReadConfig();

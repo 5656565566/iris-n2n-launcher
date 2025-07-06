@@ -93,7 +93,7 @@ public partial class MainForm : Form
         {
             if (IPtextBox.Text != "")
             {
-                MessageBox.Show("进程崩溃...");
+                MessageBox.Show("所有节点已关闭...");
                 StopMainEdge();
             }
         }

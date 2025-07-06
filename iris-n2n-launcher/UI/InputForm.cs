@@ -16,7 +16,7 @@
             Close();
         }
 
-        private void NoButton_Click(object sender, EventArgs e)
+        private void AbortButton_Click(object sender, EventArgs e)
         {
             Result = null;
             DialogResult = DialogResult.Cancel;

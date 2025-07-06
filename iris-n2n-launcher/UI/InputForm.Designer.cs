@@ -9,7 +9,7 @@
 
         private System.Windows.Forms.TextBox DataTextBox;
         private System.Windows.Forms.Button OkButton;
-        private System.Windows.Forms.Button NoButton;
+        private System.Windows.Forms.Button AbortButton;
 
         /// <summary>
         /// 清理所有正在使用的资源。
@@ -30,7 +30,7 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(InputForm));
             DataTextBox = new TextBox();
             OkButton = new Button();
-            NoButton = new Button();
+            AbortButton = new Button();
             SuspendLayout();
             // 
             // DataTextBox
@@ -52,25 +52,24 @@
             OkButton.UseVisualStyleBackColor = true;
             OkButton.Click += OkButton_Click;
             // 
-            // NoButton
+            // AbortButton
             // 
-            NoButton.Location = new Point(275, 66);
-            NoButton.Margin = new Padding(4);
-            NoButton.Name = "NoButton";
-            NoButton.Size = new Size(96, 32);
-            NoButton.TabIndex = 2;
-            NoButton.Text = "取消";
-            NoButton.UseVisualStyleBackColor = true;
-            NoButton.Click += NoButton_Click;
+            AbortButton.Location = new Point(275, 66);
+            AbortButton.Margin = new Padding(4);
+            AbortButton.Name = "AbortButton";
+            AbortButton.Size = new Size(96, 32);
+            AbortButton.TabIndex = 2;
+            AbortButton.Text = "取消";
+            AbortButton.UseVisualStyleBackColor = true;
+            AbortButton.Click += AbortButton_Click;
             // 
             // InputForm
             // 
             AcceptButton = OkButton;
             AutoScaleDimensions = new SizeF(9F, 19F);
             AutoScaleMode = AutoScaleMode.Font;
-            CancelButton = NoButton;
             ClientSize = new Size(384, 109);
-            Controls.Add(NoButton);
+            Controls.Add(AbortButton);
             Controls.Add(OkButton);
             Controls.Add(DataTextBox);
             Font = new Font("微软雅黑", 10.5F, FontStyle.Bold, GraphicsUnit.Point, 134);

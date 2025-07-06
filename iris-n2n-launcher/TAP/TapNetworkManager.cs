@@ -136,6 +136,7 @@ internal class TapNetworkManager
             {
                 return false;
             }
+
             tapAdapters = ShowNetworkInterfaceMessage(AdapterType.TAP);
             if (tapAdapters.Any(adapter => adapter.Description.Contains("TAP-Windows Adapter V9")))
             {
