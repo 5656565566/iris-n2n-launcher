@@ -26,7 +26,7 @@ public partial class ShareForm : Form
     {
         groupBox2.Text = "点击按钮复制口令, 分享给好友吧";
         string data = $"{superNodeHostAndPort}#{community}";
-        ShareRichTextBox.Text = $"我正在使用N2N联机\n我的IP是:{n2NVirtualNetworkIP}\niris://{NewUrl(data)}\n点击链接粘贴快速加入我的房间";
+        ShareRichTextBox.Text = $"我正在使用N2N联机\n我的IP是:{n2NVirtualNetworkIP}\niris://{NewUrl(data)}\n使用 WIN + R 快捷键填入 iris 链接快速启动";
 
         superNodeHostAndPort = null;
         community = null;

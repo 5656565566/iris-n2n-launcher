@@ -33,6 +33,28 @@ internal static class Program
 
         ApplicationConfiguration.Initialize();
 
+        Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
+        
+        Application.ThreadException += (s, e) => {
+            string? stackTrace = e.Exception.StackTrace;
+            string message = $"异常类型 UI线程异常: {e.Exception.Message}\n\n调用栈:\n{stackTrace}\n发送错误日志可以帮助定位问题哦";
+            MessageBox.Show(message, "N2N 发生了一个异常", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+            LogException(e.Exception);
+        };
+
+        AppDomain.CurrentDomain.UnhandledException += (s, e) => {
+            var ex = e.ExceptionObject as Exception;
+            string stackTrace = ex?.StackTrace ?? "无调用栈信息";
+            string message = $"异常类型 非UI线程异常: {ex?.Message ?? "未知错误"}\n\n调用栈:\n{stackTrace}\n发送错误日志可以帮助定位问题哦";
+            MessageBox.Show(message, "N2N 发生了一个异常", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+            if (ex != null)
+            {
+                LogException(ex);
+            }
+        };
+
         if (args.Length < 1 && !mutex.WaitOne(TimeSpan.Zero, true))
         {
             MessageBox.Show("应用程序已在运行中。");
@@ -164,24 +186,7 @@ internal static class Program
                 fileTransferService.Start();
             }
 
-            while (!mainForm.exitN2N)
-            {
-                try
-                {
-                    Application.Run(mainForm);
-                    if (!mainForm.exitN2N)
-                    {
-                        MessageBox.Show("哎呀，发生异常退出\n帮你重启了...", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    mainForm = new MainForm(3);
-                    MessageBox.Show("哎呀，主界面崩溃了\n帮你重启了...", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    logHelper.Error(ex);
-                }
-            }
-
+            Application.Run(mainForm);
         }
         else
         {
@@ -212,6 +217,23 @@ internal static class Program
         exeHelper.Dispose();
         mutex.Dispose();
         fileTransferService?.Dispose();
+    }
+
+    private static void LogException(Exception ex)
+    {
+        try
+        {
+            string logContent = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}]\n" +
+                                $"异常类型: {ex.GetType().FullName}\n" +
+                                $"异常消息: {ex.Message}\n" +
+                                $"调用栈:\n{ex.StackTrace}\n\n";
+
+            logHelper.Error(logContent);
+        }
+        catch
+        {
+            // 避免日志记录本身引发异常
+        }
     }
     private static bool TrySendToRunningInstance(string link)
     {

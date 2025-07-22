@@ -271,7 +271,7 @@ public partial class MainForm : Form
         if (states == 11)
         {
             StopMainEdge();
-            MessageBox.Show("未能自动发现可用网卡...");
+            MessageBox.Show("未能自动发现可用网卡...\n请前往设置 虚拟网卡列表\n添加一个虚拟网卡");
             return;
         }
 

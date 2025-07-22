@@ -37,25 +37,33 @@ public partial class ToolForm : Form
 
             List<List<string>> edgesInfo = [["info", "用户名", "虚拟局域网ip", "网卡mac地址", "通信模式"]];
 
+            if (edges == null) continue;
 
-            foreach (var edge in edges)
+            try
             {
-                if (edge.desc == null || edge.desc == "")
+                foreach (var edge in edges.ToList())
                 {
-                    continue;
+                    if (edge.desc == null || edge.desc == "")
+                    {
+                        continue;
+                    }
+
+                    string desc = edge.desc;
+                    int dashIndex = desc.IndexOf('-');
+
+                    if (dashIndex >= 0)
+                    {
+                        desc = desc.Substring(0, dashIndex);
+                    }
+
+                    string ip4addr = ((string)edge.ip4addr).Split('/')[0];
+
+                    edgesInfo.Add([(string)edge.macaddr, desc, ip4addr, (string)edge.macaddr, (string)edge.mode]);
                 }
-
-                string desc = edge.desc;
-                int dashIndex = desc.IndexOf('-');
-
-                if (dashIndex >= 0)
-                {
-                    desc = desc.Substring(0, dashIndex);
-                }
-
-                string ip4addr = ((string)edge.ip4addr).Split('/')[0];
-
-                edgesInfo.Add([(string)edge.macaddr, desc, ip4addr, (string)edge.macaddr, (string)edge.mode]);
+            }
+            catch
+            {
+                continue;
             }
 
 
@@ -63,7 +71,7 @@ public partial class ToolForm : Form
             {
                 RoomInfoGridView.Invoke(() =>
                 {
-                    GridViewHelper.UpdateData(RoomInfoGridView, edgesInfo, columnWeights);
+                    GridViewHelper.UpdateData(RoomInfoGridView, [.. edgesInfo], columnWeights); // 防止多线程修改问题
                 });
             }
         }
