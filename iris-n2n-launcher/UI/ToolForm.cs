@@ -12,68 +12,55 @@ public partial class ToolForm : Form
     private static readonly EdgeNodeManage edgeNodeManage = EdgeNodeManage.Instance;
     private static readonly TcpUdpForw tcpUdpForw = TcpUdpForw.Instance;
     private static FileTransferService fileTransferService = FileTransferService.Instance;
+    private static readonly BackgroundEventManager eventManager = new();
     private static string localIp = "127.0.0.1";
 
     private void EdgesInfo()
     {
-        while (true)
+        var nodeInfo = edgeNodeManage.GetNodeInfo("n2n");
+
+        if (nodeInfo == null)
         {
-            Thread.Sleep(1000);
+            return;
+        }
 
-            var nodeInfo = edgeNodeManage.GetNodeInfo("n2n");
+        nodeInfo.UdpManager.Read("edges");
+        var edges = nodeInfo.UdpManager.GetReceivedData();
 
-            if (nodeInfo == null)
+        List<float> columnWeights =
+        [
+            3, 3, 3, 2
+        ];
+
+        List<List<string>> edgesInfo = [["info", "用户名", "虚拟局域网ip", "网卡mac地址", "通信模式"]];
+
+        foreach (var edge in edges.ToList())
+        {
+            if (edge.desc == null || edge.desc == "")
             {
                 continue;
             }
 
-            nodeInfo.UdpManager.Read("edges");
-            var edges = nodeInfo.UdpManager.GetReceivedData();
+            string desc = edge.desc;
+            int dashIndex = desc.IndexOf('-');
 
-            List<float> columnWeights =
-            [
-                3, 3, 3, 2
-            ];
-
-            List<List<string>> edgesInfo = [["info", "用户名", "虚拟局域网ip", "网卡mac地址", "通信模式"]];
-
-            if (edges == null) continue;
-
-            try
+            if (dashIndex >= 0)
             {
-                foreach (var edge in edges.ToList())
-                {
-                    if (edge.desc == null || edge.desc == "")
-                    {
-                        continue;
-                    }
-
-                    string desc = edge.desc;
-                    int dashIndex = desc.IndexOf('-');
-
-                    if (dashIndex >= 0)
-                    {
-                        desc = desc.Substring(0, dashIndex);
-                    }
-
-                    string ip4addr = ((string)edge.ip4addr).Split('/')[0];
-
-                    edgesInfo.Add([(string)edge.macaddr, desc, ip4addr, (string)edge.macaddr, (string)edge.mode]);
-                }
-            }
-            catch
-            {
-                continue;
+                desc = desc.Substring(0, dashIndex);
             }
 
+            string ip4addr = ((string)edge.ip4addr).Split('/')[0];
 
-            if (RoomInfoGridView.IsHandleCreated && !RoomInfoGridView.IsDisposed)
+            edgesInfo.Add([(string)edge.macaddr, desc, ip4addr, (string)edge.macaddr, (string)edge.mode]);
+        }
+
+
+        if (RoomInfoGridView.IsHandleCreated && !RoomInfoGridView.IsDisposed)
+        {
+            RoomInfoGridView.Invoke(() =>
             {
-                RoomInfoGridView.Invoke(() =>
-                {
-                    GridViewHelper.UpdateData(RoomInfoGridView, [.. edgesInfo], columnWeights); // 防止多线程修改问题
-                });
-            }
+                GridViewHelper.UpdateData(RoomInfoGridView, [.. edgesInfo], columnWeights); // 防止多线程修改问题
+            });
         }
     }
 
@@ -110,20 +97,16 @@ public partial class ToolForm : Form
 
     private void FileTransferInfo()
     {
-        while (fileTransferService.IsRun())
+        if (FileTransferDataGridView.InvokeRequired)
         {
-            Thread.Sleep(1000);
-            if (FileTransferDataGridView.InvokeRequired)
+            try
             {
-                try
+                FileTransferDataGridView.Invoke(new Action(() =>
                 {
-                    FileTransferDataGridView.Invoke(new Action(() =>
-                    {
-                        FileTransferRe();
-                    }));
-                }
-                catch { }
+                    FileTransferRe();
+                }));
             }
+            catch { }
         }
     }
 
@@ -224,19 +207,13 @@ public partial class ToolForm : Form
             Thread.Sleep(50);
         }
 
-        var updateFileTransferThread = new Thread(FileTransferInfo)
+        if (fileTransferService.IsRun())
         {
-            IsBackground = true
-        };
+            eventManager.AddEvent("FileTransferInfo", FileTransferInfo, 1000);
+        }
 
-        var updateEdgesThread = new Thread(EdgesInfo)
-        {
-            IsBackground = true
-        };
-
-        updateFileTransferThread.Start();
-        updateEdgesThread.Start();
-
+        eventManager.AddEvent("EdgesInfo", EdgesInfo, 1000);
+        eventManager.StartAllEvents();
     }
 
     public ToolForm(string ip = "127.0.0.1")
@@ -584,5 +561,11 @@ public partial class ToolForm : Form
         }
 
         FileTransferRe();
+    }
+
+    private void ToolForm_FormClosed(object sender, FormClosedEventArgs e)
+    {
+        eventManager.StopAllEvents();
+        eventManager.ClearAllEvents();
     }
 }

@@ -102,11 +102,10 @@ internal class TapNetworkManager
                 MacAddress = adapter.GetPhysicalAddress().ToString(),
                 Speed = adapter.Speed,
                 Status = adapter.OperationalStatus.ToString(),
-                IpAddresses = adapter.GetIPProperties()
+                IpAddresses = [.. adapter.GetIPProperties()
                                       .UnicastAddresses
                                       .Where(u => u.Address.AddressFamily == AddressFamily.InterNetwork)
-                                      .Select(u => u.Address.ToString())
-                                      .ToList()
+                                      .Select(u => u.Address.ToString())]
             };
 
             result.Add(info);

@@ -1,11 +1,12 @@
 ﻿
-using iris_n2n_launcher.N2N;
-using iris_n2n_launcher.Utils;
 using iris_n2n_launcher.Config;
+using iris_n2n_launcher.N2N;
 using iris_n2n_launcher.TAP;
-using static iris_n2n_launcher.Utils.FirewallHelper;
+using iris_n2n_launcher.Utils;
 using iris_n2n_launcher.Utils.FileTransfer;
 using System.Text.RegularExpressions;
+
+using static iris_n2n_launcher.Utils.FirewallHelper;
 
 namespace iris_n2n_launcher.UI;
 
@@ -17,6 +18,7 @@ public partial class MainForm : Form
     private static readonly TapNetworkManager tapNetworkManager = new();
     private static readonly MinecraftLanProxy minecraftLanProxy = MinecraftLanProxy.Instance;
     private static readonly FileTransferService fileTransferService = FileTransferService.Instance;
+    private static readonly BackgroundEventManager eventManager = new();
     private static int seletMode = 0;
     public string? share;
     public bool exitN2N = false; // 正常退出标志位
@@ -33,25 +35,12 @@ public partial class MainForm : Form
 
     private void MainForm_Shown(object? sender, EventArgs e)
     {
-        var mianInfoThread = new Thread(MianInfo)
-        {
-            IsBackground = true
-        };
-
-        mianInfoThread.Start();
+        eventManager.AddEvent("MianInfo", MianInfo, 1000);
     }
 
     private void MianInfo()
     {
-        while (true)
-        {
-            Thread.Sleep(2000);
-            try
-            {
-                IPtextBox.Invoke(new Action(() => { MianEdge(); }));
-            }
-            catch { }
-        }
+        IPtextBox.Invoke(new Action(() => { MianEdge(); }));
     }
 
     private void MianEdge()
@@ -191,7 +180,6 @@ public partial class MainForm : Form
     {
         if (seletMode == 1) { SwitchButton_Click(null, EventArgs.Empty); Hide();  }
         if (seletMode == 2) { ProcessSharingLink(share!); }
-        if (seletMode == 3) { IPtextBox.Invoke(new Action(() => { MianEdge(); })); }
     }
 
     private void 显示窗口ToolStripMenuItem_Click(object sender, EventArgs e)
@@ -242,13 +230,19 @@ public partial class MainForm : Form
             return;
         }
 
-        string configMame = configManager.LoadConfig<Configuration>("config").ConfigName;
+        Configuration config = configManager.LoadConfig<Configuration>("config");
+        string configMame = config.ConfigName;
         N2NConfiguration n2NConfiguration = configManager.LoadConfig<N2NConfiguration>(configMame);
 
         if (n2NConfiguration.SuperNodeHostAndPort == "")
         {
             MessageBox.Show("请先选择一个服务器吧...");
             return;
+        }
+
+        if (config.FirewallEnabledOnExit)
+        {
+            FirewallOperateByObject(false, false, false);
         }
 
         AddEdge(n2NConfiguration);
@@ -402,6 +396,8 @@ public partial class MainForm : Form
                 return;
             }
         }
+
+        eventManager.StopAllEvents();
         exitN2N = true;
     }
 
