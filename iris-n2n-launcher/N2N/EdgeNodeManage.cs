@@ -4,6 +4,7 @@ using System.Diagnostics;
 using static iris_n2n_launcher.Utils.FirewallHelper;
 using iris_n2n_launcher.TAP;
 using iris_n2n_launcher.Config;
+using System.Text;
 
 namespace iris_n2n_launcher.N2N;
 
@@ -240,7 +241,7 @@ public class EdgeNodeManage : IDisposable
         }
     }
 
-    private List<EdgeNodeInfo> FetchNodeInfo()
+    public List<EdgeNodeInfo> FetchNodesInfo()
     {
         return [.. _activeNodes.Values];
     }

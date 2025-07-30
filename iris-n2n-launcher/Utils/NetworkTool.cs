@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
+using System.Text;
 
 namespace iris_n2n_launcher.Utils;
 
@@ -225,5 +226,19 @@ internal class NetworkTool
         string base64String = "AwIABXRlc3QAAAAAAAAAAAAAAAAAAAAAP0dcEwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABABByW5GmcX3Ca4DZunL/XqH/AAAAAA=="; // 固定测试数据包
 
         return Convert.FromBase64String(base64String);
+    }
+
+    /// <summary>
+    /// 发送一条广播消息
+    /// </summary>
+    /// <param name="message">广播消息的内容</param>
+    /// <param name="port">端口</param>
+    public static void SendUdpBroadcast(string message, int port)
+    {
+        using var client = new UdpClient();
+        client.EnableBroadcast = true;
+        var data = Encoding.UTF8.GetBytes(message);
+        var endpoint = new IPEndPoint(IPAddress.Broadcast, port);
+        client.Send(data, data.Length, endpoint);
     }
 }

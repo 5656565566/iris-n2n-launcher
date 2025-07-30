@@ -8,6 +8,7 @@ namespace iris_n2n_launcher.Utils
         private readonly ConcurrentDictionary<string, (Timer timer, Action action)> _events = new();
         private readonly object _lock = new();
         private bool _isRunning = false;
+        private static readonly LogHelper logHelper = LogHelper.Instance;
 
         public BackgroundEventManager() { }
 
@@ -35,7 +36,7 @@ namespace iris_n2n_launcher.Utils
                     RemoveEvent(eventName);
                 }
 
-                var timer = new System.Windows.Forms.Timer
+                var timer = new Timer
                 {
                     Interval = intervalMilliseconds
                 };
@@ -49,9 +50,9 @@ namespace iris_n2n_launcher.Utils
                             action();
                         }
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        // 忽略所有错误
+                        logHelper.Error(ex);
                     }
                 };
 
@@ -87,10 +88,10 @@ namespace iris_n2n_launcher.Utils
         {
             lock (_lock)
             {
-                foreach (var eventData in _events.Values)
+                foreach (var (timer, action) in _events.Values)
                 {
-                    eventData.timer.Stop();
-                    eventData.timer.Dispose();
+                    timer.Stop();
+                    timer.Dispose();
                 }
                 _events.Clear();
             }

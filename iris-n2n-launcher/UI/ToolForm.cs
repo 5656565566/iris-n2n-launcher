@@ -17,15 +17,15 @@ public partial class ToolForm : Form
 
     private void EdgesInfo()
     {
-        var nodeInfo = edgeNodeManage.GetNodeInfo("n2n");
+        NetworkTool.SendUdpBroadcast("n2n", 12345); // 广播数据包嗅探其他客户端
 
-        if (nodeInfo == null)
+        var nodesInfo = edgeNodeManage.FetchNodesInfo();
+
+        if (nodesInfo == null)
         {
             return;
         }
 
-        nodeInfo.UdpManager.Read("edges");
-        var edges = nodeInfo.UdpManager.GetReceivedData();
 
         List<float> columnWeights =
         [
@@ -34,26 +34,34 @@ public partial class ToolForm : Form
 
         List<List<string>> edgesInfo = [["info", "用户名", "虚拟局域网ip", "网卡mac地址", "通信模式"]];
 
-        foreach (var edge in edges.ToList())
+
+        foreach (var nodeInfo in nodesInfo)
         {
-            if (edge.desc == null || edge.desc == "")
+            if (nodeInfo == null) continue;
+
+            nodeInfo.UdpManager.Read("edges");
+            var edges = nodeInfo.UdpManager.GetReceivedData();
+
+            foreach (var edge in edges.ToList())
             {
-                continue;
+                if (edge.desc == null || edge.desc == "")
+                {
+                    continue;
+                }
+
+                string desc = edge.desc;
+                int dashIndex = desc.IndexOf('-');
+
+                if (dashIndex >= 0)
+                {
+                    desc = desc.Substring(0, dashIndex);
+                }
+
+                string ip4addr = ((string)edge.ip4addr).Split('/')[0];
+
+                edgesInfo.Add([(string)edge.macaddr, desc, ip4addr, (string)edge.macaddr, (string)edge.mode]);
             }
-
-            string desc = edge.desc;
-            int dashIndex = desc.IndexOf('-');
-
-            if (dashIndex >= 0)
-            {
-                desc = desc.Substring(0, dashIndex);
-            }
-
-            string ip4addr = ((string)edge.ip4addr).Split('/')[0];
-
-            edgesInfo.Add([(string)edge.macaddr, desc, ip4addr, (string)edge.macaddr, (string)edge.mode]);
         }
-
 
         if (RoomInfoGridView.IsHandleCreated && !RoomInfoGridView.IsDisposed)
         {

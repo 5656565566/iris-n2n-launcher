@@ -68,6 +68,7 @@ namespace iris_n2n_launcher.UI
         private void ConfigComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             n2NConfiguration = configManager.LoadConfig<N2NConfiguration>(ConfigComboBox.Text);
+            RoomTextBox.Text = n2NConfiguration.Community;
         }
 
         private void RoomTextBox_TextChanged(object sender, EventArgs e)

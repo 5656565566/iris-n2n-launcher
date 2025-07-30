@@ -2,6 +2,7 @@
 using NLog.Config;
 using NLog.Targets;
 using System.Diagnostics.CodeAnalysis;
+using System.Text;
 
 namespace iris_n2n_launcher.Utils;
 
@@ -31,6 +32,8 @@ public sealed class LogHelper
     #region 配置NLog
     private static void SetupNLogConfiguration()
     {
+        CleanOldLogs();
+
         var config = new LoggingConfiguration();
 
         // 控制台目标
@@ -44,7 +47,9 @@ public sealed class LogHelper
         var fileTarget = new FileTarget("file")
         {
             FileName = "${basedir}/Logs/${shortdate}/${level}.txt",
-            Layout = "${longdate} [${threadid}] | ${message} ${onexception:${exception:format=tostring} ${newline} ${stacktrace} ${newline}"
+            Layout = "${longdate} [${threadid}] | ${message} ${onexception:${exception:format=tostring} ${newline} ${stacktrace} ${newline}",
+            Encoding = Encoding.Default,
+            WriteBom = false
         };
         config.AddTarget(fileTarget);
 
@@ -53,6 +58,41 @@ public sealed class LogHelper
         config.AddRule(LogLevel.Debug, LogLevel.Fatal, fileTarget);
 
         LogManager.Configuration = config;
+    }
+
+    /// <summary>
+    /// 清理一周前的日志文件夹
+    /// </summary>
+    private static void CleanOldLogs()
+    {
+        try
+        {
+            string logsDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Logs");
+            if (!Directory.Exists(logsDirectory))
+            {
+                return;
+            }
+
+            var cutoffDate = DateTime.Now.AddDays(-7);
+            var logDirectories = Directory.GetDirectories(logsDirectory);
+
+            foreach (var dir in logDirectories)
+            {
+                // 从文件夹名称解析日期
+                if (DateTime.TryParse(Path.GetFileName(dir), out var folderDate))
+                {
+                    if (folderDate < cutoffDate)
+                    {
+                        try
+                        {
+                            Directory.Delete(dir, true);
+                        }
+                        catch { }
+                    }
+                }
+            }
+        }
+        catch { }
     }
     #endregion
 

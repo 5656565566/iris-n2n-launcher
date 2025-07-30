@@ -50,7 +50,7 @@ internal sealed class TcpUdpForw
             _apiBaseUrl = $"http://127.0.0.1:{apiPort}/api/";
             _client = new HttpClient();
 
-            _process = _exeHelper.CreateProcess(EXE, $"-p {apiPort} -code {_authCode} -config {configFile}");
+            _process = _exeHelper.CreateProcess(EXE, $"-p {apiPort} -code {_authCode} -config {configFile}", encoding: Encoding.UTF8);
         }
     }
 

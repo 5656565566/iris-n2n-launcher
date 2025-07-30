@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Text;
 
 
 namespace iris_n2n_launcher.Utils;
@@ -30,7 +31,7 @@ public sealed class ExeHelper : IDisposable
     /// <param name="arguments">需要传递的参数</param>
     /// <param name="workDirPath">工作目录</param>
     /// <returns>创建的进程</returns>
-    public Process CreateProcess(string command, string arguments, string workDirPath = "", bool useOutputHandlers = true)
+    public Process CreateProcess(string command, string arguments, string workDirPath = "", bool useOutputHandlers = true, Encoding? encoding = null)
     {
         LogHelper logHelper = LogHelper.Instance;
 
@@ -40,7 +41,9 @@ public sealed class ExeHelper : IDisposable
             RedirectStandardOutput = true,
             RedirectStandardInput = true,
             RedirectStandardError = true,
-            CreateNoWindow = true
+            CreateNoWindow = true,
+            StandardOutputEncoding = encoding,
+            StandardErrorEncoding = encoding,
         };
 
         if (!string.IsNullOrWhiteSpace(workDirPath))
@@ -100,7 +103,7 @@ public sealed class ExeHelper : IDisposable
     {
         try
         {
-            using var process = CreateProcess(command, arguments, workDirPath, useOutputHandlers: false);
+            using var process = CreateProcess(command, arguments, workDirPath, useOutputHandlers: false, encoding: Encoding.UTF8);
             LogHelper.Instance.Info("Command started: {0} {1}", command, arguments);
 
             var output = await process.StandardOutput.ReadToEndAsync();
@@ -140,7 +143,7 @@ public sealed class ExeHelper : IDisposable
     {
         try
         {
-            using var process = CreateProcess(command, arguments, workDirPath, useOutputHandlers: false);
+            using var process = CreateProcess(command, arguments, workDirPath, useOutputHandlers: false, encoding: Encoding.UTF8);
             LogHelper.Instance.Info("Command started: {0} {1}", command, arguments);
 
             var outputTask = process.StandardOutput.ReadToEndAsync();
