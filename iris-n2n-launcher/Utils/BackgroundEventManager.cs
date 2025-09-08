@@ -1,5 +1,5 @@
 ﻿using System.Collections.Concurrent;
-using Timer = System.Windows.Forms.Timer;
+using Timer = System.Timers.Timer;
 
 namespace iris_n2n_launcher.Utils
 {
@@ -16,7 +16,7 @@ namespace iris_n2n_launcher.Utils
         /// 添加一个循环事件
         /// </summary>
         /// <param name="eventName">事件名称</param>
-        /// <param name="action">要执行的动作</param>
+        /// <param name="action">要执行的动作。注意：此动作在后台线程上执行，如需操作UI元素，请确保使用Invoke/Dispatcher等方式切换回UI线程。</param>
         /// <param name="intervalMilliseconds">循环间隔(毫秒)</param>
         public void AddEvent(string eventName, Action action, int intervalMilliseconds)
         {
@@ -38,10 +38,13 @@ namespace iris_n2n_launcher.Utils
 
                 var timer = new Timer
                 {
-                    Interval = intervalMilliseconds
+                    Interval = intervalMilliseconds,
+                    // AutoReset 默认为 true, 这将使计时器在每个间隔后持续触发。
+                    AutoReset = true
                 };
 
-                timer.Tick += (sender, e) =>
+                // 使用 Elapsed 事件，它在后台线程上触发
+                timer.Elapsed += (sender, e) =>
                 {
                     try
                     {
@@ -138,7 +141,7 @@ namespace iris_n2n_launcher.Utils
         /// </summary>
         public string[] GetEventNames()
         {
-            return _events.Keys.ToArray();
+            return [.. _events.Keys];
         }
 
         public void Dispose()

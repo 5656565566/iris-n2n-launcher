@@ -99,7 +99,7 @@ public partial class ToolForm : Form
         }
         catch (InvalidOperationException)
         {
-
+            Thread.Sleep(10);
         }
     }
 
@@ -114,7 +114,10 @@ public partial class ToolForm : Form
                     FileTransferRe();
                 }));
             }
-            catch { }
+            catch
+            {
+                Thread.Sleep(10);
+            }
         }
     }
 
@@ -173,7 +176,7 @@ public partial class ToolForm : Form
         }
         catch (InvalidOperationException)
         {
-
+            Thread.Sleep(10);
         }
     }
 
