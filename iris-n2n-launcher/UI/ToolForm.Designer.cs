@@ -120,11 +120,11 @@
             // 
             tabPage2.Controls.Add(StunHelpRichTextBox);
             tabPage2.Controls.Add(groupBox1);
-            tabPage2.Location = new Point(4, 26);
+            tabPage2.Location = new Point(4, 28);
             tabPage2.Margin = new Padding(5, 6, 5, 6);
             tabPage2.Name = "tabPage2";
             tabPage2.Padding = new Padding(5, 6, 5, 6);
-            tabPage2.Size = new Size(726, 381);
+            tabPage2.Size = new Size(726, 379);
             tabPage2.TabIndex = 1;
             tabPage2.Text = "NAT 类型检测";
             tabPage2.UseVisualStyleBackColor = true;
@@ -221,9 +221,9 @@
             // tabPage3
             // 
             tabPage3.Controls.Add(tableLayoutPanel1);
-            tabPage3.Location = new Point(4, 26);
+            tabPage3.Location = new Point(4, 28);
             tabPage3.Name = "tabPage3";
-            tabPage3.Size = new Size(726, 381);
+            tabPage3.Size = new Size(726, 379);
             tabPage3.TabIndex = 3;
             tabPage3.Text = "Ping测试";
             tabPage3.UseVisualStyleBackColor = true;
@@ -244,7 +244,7 @@
             tableLayoutPanel1.RowCount = 2;
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 10.6895742F));
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 89.3104248F));
-            tableLayoutPanel1.Size = new Size(726, 381);
+            tableLayoutPanel1.Size = new Size(726, 379);
             tableLayoutPanel1.TabIndex = 5;
             // 
             // PingResultListBox
@@ -256,7 +256,7 @@
             PingResultListBox.ItemHeight = 24;
             PingResultListBox.Location = new Point(3, 43);
             PingResultListBox.Name = "PingResultListBox";
-            PingResultListBox.Size = new Size(720, 335);
+            PingResultListBox.Size = new Size(720, 333);
             PingResultListBox.TabIndex = 1;
             // 
             // PingIpBox
@@ -292,9 +292,9 @@
             // tabPage4
             // 
             tabPage4.Controls.Add(tableLayoutPanel2);
-            tabPage4.Location = new Point(4, 26);
+            tabPage4.Location = new Point(4, 28);
             tabPage4.Name = "tabPage4";
-            tabPage4.Size = new Size(726, 381);
+            tabPage4.Size = new Size(726, 379);
             tabPage4.TabIndex = 5;
             tabPage4.Text = "端口映射";
             tabPage4.UseVisualStyleBackColor = true;
@@ -317,7 +317,7 @@
             tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Percent, 41F));
             tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Percent, 18F));
             tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Percent, 5F));
-            tableLayoutPanel2.Size = new Size(726, 381);
+            tableLayoutPanel2.Size = new Size(726, 379);
             tableLayoutPanel2.TabIndex = 4;
             // 
             // TcpUdpForwDataGridView
@@ -329,7 +329,7 @@
             TcpUdpForwDataGridView.RowHeadersWidth = 51;
             tableLayoutPanel2.SetRowSpan(TcpUdpForwDataGridView, 5);
             TcpUdpForwDataGridView.RowTemplate.Height = 27;
-            TcpUdpForwDataGridView.Size = new Size(665, 375);
+            TcpUdpForwDataGridView.Size = new Size(665, 373);
             TcpUdpForwDataGridView.TabIndex = 0;
             // 
             // TcpUdpForwDelButton
@@ -348,7 +348,7 @@
             // 
             TcpUdpForwReButton.FlatStyle = FlatStyle.Flat;
             TcpUdpForwReButton.Image = Properties.Resources.刷新;
-            TcpUdpForwReButton.Location = new Point(674, 294);
+            TcpUdpForwReButton.Location = new Point(674, 293);
             TcpUdpForwReButton.Margin = new Padding(3, 2, 3, 2);
             TcpUdpForwReButton.Name = "TcpUdpForwReButton";
             TcpUdpForwReButton.Size = new Size(48, 48);

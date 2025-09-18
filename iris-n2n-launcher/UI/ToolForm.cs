@@ -322,6 +322,11 @@ public partial class ToolForm : Form
 
     private static NatType DetermineNatType(StunResult5389 result)
     {
+        if(result.FilteringBehavior == FilteringBehavior.EndpointIndependent)
+        {
+            if (result.MappingBehavior == MappingBehavior.Direct) return NatType.OpenInternet;
+        }
+
         if (result.FilteringBehavior == FilteringBehavior.EndpointIndependent)
         {
             return result.MappingBehavior == MappingBehavior.EndpointIndependent
@@ -346,10 +351,13 @@ public partial class ToolForm : Form
     {
         var sb = new StringBuilder();
 
+
+
+
         if (result != null)
         {
-            sb.AppendLine($"▪ 映射行为: {result.MappingBehavior}");
-            sb.AppendLine($"▪ 过滤行为: {result.FilteringBehavior}");
+            sb.AppendLine($"▪ 映射行为: {TranslateBehavior(result.MappingBehavior)}");
+            sb.AppendLine($"▪ 过滤行为: {TranslateBehavior(result.FilteringBehavior)}");
             sb.AppendLine($"▪ 公网端点: {result.PublicEndPoint}");
             sb.AppendLine($"▪ 本地端点: {result.LocalEndPoint}");
         }
@@ -380,6 +388,12 @@ public partial class ToolForm : Form
                 sb.AppendLine("➤ 需要服务器中转...");
                 break;
 
+            case NatType.OpenInternet:
+                label1.Text = "公网";
+                sb.Insert(0, "完全不限制任何端口的出入\n");
+                sb.AppendLine("➤ 无需任何设置...");
+                break;
+
             default:
                 label1.Text = "未知类型";
                 sb.Insert(0, "更换服务器或防火墙?\n");
@@ -389,6 +403,49 @@ public partial class ToolForm : Form
         StunHelpRichTextBox.Text = sb.ToString();
         label5.Visible = natType == NatType.Symmetric;
     }
+
+    private string TranslateBehavior(MappingBehavior behavior)
+    {
+        switch (behavior)
+        {
+            case MappingBehavior.EndpointIndependent:
+                return "端点无关映射";
+            case MappingBehavior.AddressDependent:
+                return "地址限制";
+            case MappingBehavior.AddressAndPortDependent:
+                return "地址和端口限制";
+            case MappingBehavior.Fail:
+                return "检测失败";
+            case MappingBehavior.Direct:
+                return "无法检测到NAT设备";
+            case MappingBehavior.UnsupportedServer:
+                return "无法连接服务器";
+            case MappingBehavior.Unknown:
+                return "无法连接服务器";
+            default:
+                return "未知异常";
+        }
+    }
+
+    private string TranslateBehavior(FilteringBehavior behavior)
+    {
+        switch (behavior)
+        {
+            case FilteringBehavior.EndpointIndependent:
+                return "端点无关过滤";
+            case FilteringBehavior.AddressDependent:
+                return "地址过滤";
+            case FilteringBehavior.AddressAndPortDependent:
+                return "地址和端口过滤";
+            case FilteringBehavior.UnsupportedServer:
+                return "无法连接服务器";
+            case FilteringBehavior.Unknown:
+                return "未知";
+            default:
+                return "未知异常";
+        }
+    }
+
 
     private void PingResultAdd(int rtt)
     {
