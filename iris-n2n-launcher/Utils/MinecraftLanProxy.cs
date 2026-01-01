@@ -12,6 +12,8 @@ public sealed class MinecraftLanProxy : IDisposable
         new(() => new MinecraftLanProxy());
     public static MinecraftLanProxy Instance => _instance.Value;
 
+    private const string ProxySignature = "[[IRIS_PROXY]]";
+
     private readonly ConcurrentDictionary<string, DateTime> _servers = new();
     private readonly int _port = 4445;
     private readonly int _timeout = 10;
@@ -168,6 +170,11 @@ public sealed class MinecraftLanProxy : IDisposable
             return; // 非本机IP的广播直接丢弃
         }
 
+        if (message.EndsWith(ProxySignature))
+        {
+            return;
+        }
+
         if (!message.StartsWith("[MOTD]") || !message.Contains("[AD]"))
             return;
 
@@ -226,7 +233,7 @@ public sealed class MinecraftLanProxy : IDisposable
             var message = kvp.Key;
             if (message == null) continue;
 
-            var data = Encoding.UTF8.GetBytes(message);
+            var data = Encoding.UTF8.GetBytes(message + ProxySignature);
 
             await (_broadcaster?.SendAsync(
                 data,

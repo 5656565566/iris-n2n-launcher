@@ -54,7 +54,7 @@ public partial class ToolForm : Form
 
                 if (dashIndex >= 0)
                 {
-                    desc = desc.Substring(0, dashIndex);
+                    desc = desc[..dashIndex];
                 }
 
                 string ip4addr = ((string)edge.ip4addr).Split('/')[0];
