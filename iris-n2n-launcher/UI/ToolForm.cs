@@ -4,6 +4,7 @@ using iris_n2n_launcher.Utils.FileTransfer;
 using STUN.Enums;
 using STUN.StunResult;
 using System.Text;
+using static iris_n2n_launcher.Utils.FirewallHelper;
 
 namespace iris_n2n_launcher.UI;
 
@@ -11,7 +12,7 @@ public partial class ToolForm : Form
 {
     private static readonly EdgeNodeManage edgeNodeManage = EdgeNodeManage.Instance;
     private static readonly TcpUdpForw tcpUdpForw = TcpUdpForw.Instance;
-    private static FileTransferService fileTransferService = FileTransferService.Instance;
+    private static readonly FileTransferService fileTransferService = FileTransferService.Instance;
     private static readonly BackgroundEventManager eventManager = new();
     private static string localIp = "127.0.0.1";
 
@@ -261,6 +262,16 @@ public partial class ToolForm : Form
         }
 
         Shown += ToolForm_Shown;
+        var (ok, port) = SpeedTest.GetServerStatus();
+        if (ok) {
+            label10.Text = "开启";
+            EchoServerAddrTextBox.Text = $"{localIp}:{port}";
+        }
+        else
+        {
+            label10.Text = "关闭";
+        }
+        
     }
     private async void StunTestButton_Click(object sender, EventArgs e)
     {
@@ -322,7 +333,7 @@ public partial class ToolForm : Form
 
     private static NatType DetermineNatType(StunResult5389 result)
     {
-        if(result.FilteringBehavior == FilteringBehavior.EndpointIndependent)
+        if (result.FilteringBehavior == FilteringBehavior.EndpointIndependent)
         {
             if (result.MappingBehavior == MappingBehavior.Direct) return NatType.OpenInternet;
         }
@@ -635,5 +646,103 @@ public partial class ToolForm : Form
     {
         eventManager.StopAllEvents();
         eventManager.ClearAllEvents();
+    }
+
+    private void StartEchoButton_Click(object sender, EventArgs e)
+    {
+        var port = SpeedTest.StartServer();
+        EchoServerAddrTextBox.Text = $"{localIp}:{port}";
+        label10.Text = "开启";
+    }
+
+    private void StopEchoButton_Click(object sender, EventArgs e)
+    {
+        SpeedTest.StopServer();
+        label10.Text = "关闭";
+    }
+
+    private async void SpeedTestButton_Click(object sender, EventArgs e)
+    {
+        SpeedTestButton.Enabled = false;
+        SpeedTestRichTextBox.Clear();
+
+        try
+        {
+            string input = EchoServerAddrTextBox.Text.Trim();
+
+            if (string.IsNullOrEmpty(input))
+            {
+                AppendText("错误: 请输入服务器地址 (格式 IP:Port)\n", Color.Red);
+                return;
+            }
+
+            int lastColonIndex = input.LastIndexOf(':');
+            if (lastColonIndex == -1 || lastColonIndex == input.Length - 1)
+            {
+                AppendText("错误: 格式不正确，缺少端口号 (例如 127.0.0.1:8080)\n", Color.Red);
+                return;
+            }
+
+            string host = input.Substring(0, lastColonIndex);
+            string portStr = input.Substring(lastColonIndex + 1);
+
+            if (!int.TryParse(portStr, out int port) || port < 1 || port > 65535)
+            {
+                AppendText("错误: 端口号无效 (1-65535)\n", Color.Red);
+                return;
+            }
+
+            AppendText($">>> 开始测试目标: {host}:{port}\n\n", Color.DarkBlue, true);
+
+            AppendText("正在进行 UDP 传输质量测试...\n", Color.Gray);
+            var udpResult = await SpeedTest.RunUdpTestAsync(host, port);
+            PrintResult(udpResult);
+
+            AppendText("正在进行 TCP 连接稳定性测试...\n", Color.Gray);
+            var tcpResult = await SpeedTest.RunTcpTestAsync(host, port);
+            PrintResult(tcpResult);
+
+            AppendText(">>> 所有测试结束", Color.DarkBlue, true);
+        }
+        catch (Exception ex)
+        {
+            AppendText($"\n程序异常: {ex.Message}\n", Color.Red);
+        }
+        finally
+        {
+            SpeedTestButton.Enabled = true;
+        }
+
+
+        void AppendText(string text, Color color, bool bold = false)
+        {
+            SpeedTestRichTextBox.SelectionStart = SpeedTestRichTextBox.TextLength;
+            SpeedTestRichTextBox.SelectionLength = 0;
+
+            SpeedTestRichTextBox.SelectionColor = color;
+            SpeedTestRichTextBox.SelectionFont = new Font(SpeedTestRichTextBox.Font, bold ? FontStyle.Bold : FontStyle.Regular);
+            SpeedTestRichTextBox.AppendText(text);
+            SpeedTestRichTextBox.ScrollToCaret();
+        }
+
+        void PrintResult(NetworkQualityResult result)
+        {
+            if (result.IsSuccess)
+            {
+                Color ratingColor = result.PacketLossRate > 0.05 || result.JitterMs > 50 ? Color.Red :
+                                    result.AvgLatencyMs < 60 && result.PacketLossRate == 0 ? Color.Green : Color.OrangeRed;
+
+                AppendText($"  [{result.Protocol}] 测试完成\n", Color.Black, true);
+                AppendText($"  ----------------------------\n", Color.Gray);
+                AppendText($"  平均延迟 : ", Color.Black); AppendText($"{result.AvgLatencyMs} ms\n", Color.Blue, true);
+                AppendText($"  网络抖动 : ", Color.Black); AppendText($"{result.JitterMs} ms\n", Color.Blue);
+                AppendText($"  丢包率   : ", Color.Black); AppendText($"{(result.PacketLossRate * 100):0.00}%\n", result.PacketLossRate > 0 ? Color.Red : Color.Green);
+                AppendText($"  综合评价 : ", Color.Black); AppendText($"{result.QualityRating}\n\n", ratingColor, true);
+            }
+            else
+            {
+                AppendText($"  [{result.Protocol}] 测试失败: {result.Message}\n\n", Color.Red);
+            }
+        }
     }
 }

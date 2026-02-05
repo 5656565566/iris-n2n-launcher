@@ -60,6 +60,20 @@
             FileTransferAddButton = new Button();
             FileTransferDelButton = new Button();
             FileTransferReButton = new Button();
+            tabPage6 = new TabPage();
+            SpeedTestRichTextBox = new RichTextBox();
+            groupBox2 = new GroupBox();
+            StartEchoButton = new Button();
+            StopEchoButton = new Button();
+            EchoServerAddrTextBox = new TextBox();
+            label11 = new Label();
+            SpeedTestAddrTextBox = new TextBox();
+            label6 = new Label();
+            label7 = new Label();
+            label8 = new Label();
+            label9 = new Label();
+            label10 = new Label();
+            SpeedTestButton = new Button();
             tabControl1.SuspendLayout();
             tabPage1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)RoomInfoGridView).BeginInit();
@@ -74,6 +88,8 @@
             tabPage5.SuspendLayout();
             tableLayoutPanel3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)FileTransferDataGridView).BeginInit();
+            tabPage6.SuspendLayout();
+            groupBox2.SuspendLayout();
             SuspendLayout();
             // 
             // tabControl1
@@ -83,6 +99,7 @@
             tabControl1.Controls.Add(tabPage3);
             tabControl1.Controls.Add(tabPage4);
             tabControl1.Controls.Add(tabPage5);
+            tabControl1.Controls.Add(tabPage6);
             tabControl1.Dock = DockStyle.Fill;
             tabControl1.Location = new Point(0, 0);
             tabControl1.Margin = new Padding(5, 6, 5, 6);
@@ -120,11 +137,11 @@
             // 
             tabPage2.Controls.Add(StunHelpRichTextBox);
             tabPage2.Controls.Add(groupBox1);
-            tabPage2.Location = new Point(4, 28);
+            tabPage2.Location = new Point(4, 26);
             tabPage2.Margin = new Padding(5, 6, 5, 6);
             tabPage2.Name = "tabPage2";
             tabPage2.Padding = new Padding(5, 6, 5, 6);
-            tabPage2.Size = new Size(726, 379);
+            tabPage2.Size = new Size(726, 381);
             tabPage2.TabIndex = 1;
             tabPage2.Text = "NAT 类型检测";
             tabPage2.UseVisualStyleBackColor = true;
@@ -221,9 +238,9 @@
             // tabPage3
             // 
             tabPage3.Controls.Add(tableLayoutPanel1);
-            tabPage3.Location = new Point(4, 28);
+            tabPage3.Location = new Point(4, 26);
             tabPage3.Name = "tabPage3";
-            tabPage3.Size = new Size(726, 379);
+            tabPage3.Size = new Size(726, 381);
             tabPage3.TabIndex = 3;
             tabPage3.Text = "Ping测试";
             tabPage3.UseVisualStyleBackColor = true;
@@ -244,7 +261,7 @@
             tableLayoutPanel1.RowCount = 2;
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 10.6895742F));
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 89.3104248F));
-            tableLayoutPanel1.Size = new Size(726, 379);
+            tableLayoutPanel1.Size = new Size(726, 381);
             tableLayoutPanel1.TabIndex = 5;
             // 
             // PingResultListBox
@@ -256,7 +273,7 @@
             PingResultListBox.ItemHeight = 24;
             PingResultListBox.Location = new Point(3, 43);
             PingResultListBox.Name = "PingResultListBox";
-            PingResultListBox.Size = new Size(720, 333);
+            PingResultListBox.Size = new Size(720, 335);
             PingResultListBox.TabIndex = 1;
             // 
             // PingIpBox
@@ -292,9 +309,9 @@
             // tabPage4
             // 
             tabPage4.Controls.Add(tableLayoutPanel2);
-            tabPage4.Location = new Point(4, 28);
+            tabPage4.Location = new Point(4, 26);
             tabPage4.Name = "tabPage4";
-            tabPage4.Size = new Size(726, 379);
+            tabPage4.Size = new Size(726, 381);
             tabPage4.TabIndex = 5;
             tabPage4.Text = "端口映射";
             tabPage4.UseVisualStyleBackColor = true;
@@ -317,7 +334,7 @@
             tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Percent, 41F));
             tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Percent, 18F));
             tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Percent, 5F));
-            tableLayoutPanel2.Size = new Size(726, 379);
+            tableLayoutPanel2.Size = new Size(726, 381);
             tableLayoutPanel2.TabIndex = 4;
             // 
             // TcpUdpForwDataGridView
@@ -329,7 +346,7 @@
             TcpUdpForwDataGridView.RowHeadersWidth = 51;
             tableLayoutPanel2.SetRowSpan(TcpUdpForwDataGridView, 5);
             TcpUdpForwDataGridView.RowTemplate.Height = 27;
-            TcpUdpForwDataGridView.Size = new Size(665, 373);
+            TcpUdpForwDataGridView.Size = new Size(665, 375);
             TcpUdpForwDataGridView.TabIndex = 0;
             // 
             // TcpUdpForwDelButton
@@ -348,7 +365,7 @@
             // 
             TcpUdpForwReButton.FlatStyle = FlatStyle.Flat;
             TcpUdpForwReButton.Image = Properties.Resources.刷新;
-            TcpUdpForwReButton.Location = new Point(674, 293);
+            TcpUdpForwReButton.Location = new Point(674, 294);
             TcpUdpForwReButton.Margin = new Padding(3, 2, 3, 2);
             TcpUdpForwReButton.Name = "TcpUdpForwReButton";
             TcpUdpForwReButton.Size = new Size(48, 48);
@@ -445,6 +462,147 @@
             FileTransferReButton.UseVisualStyleBackColor = true;
             FileTransferReButton.Click += FileTransferReButton_Click;
             // 
+            // tabPage6
+            // 
+            tabPage6.Controls.Add(SpeedTestRichTextBox);
+            tabPage6.Controls.Add(groupBox2);
+            tabPage6.Location = new Point(4, 28);
+            tabPage6.Name = "tabPage6";
+            tabPage6.Padding = new Padding(3);
+            tabPage6.Size = new Size(726, 379);
+            tabPage6.TabIndex = 6;
+            tabPage6.Text = "联机检测";
+            tabPage6.UseVisualStyleBackColor = true;
+            // 
+            // SpeedTestRichTextBox
+            // 
+            SpeedTestRichTextBox.Dock = DockStyle.Right;
+            SpeedTestRichTextBox.Font = new Font("黑体", 15F, FontStyle.Regular, GraphicsUnit.Point, 134);
+            SpeedTestRichTextBox.Location = new Point(356, 3);
+            SpeedTestRichTextBox.Name = "SpeedTestRichTextBox";
+            SpeedTestRichTextBox.ReadOnly = true;
+            SpeedTestRichTextBox.Size = new Size(367, 373);
+            SpeedTestRichTextBox.TabIndex = 9;
+            SpeedTestRichTextBox.Text = "联机质量测试  \n通过对方开启的 Echo 服务器进行检测  \n\n填写对方服务器地址 → 开始测试  \n\n说明：  \n- 此处填写 “对方” 的服务器地址  \n- 如无需对方测试你 无需自行启动服务\n";
+            // 
+            // groupBox2
+            // 
+            groupBox2.Controls.Add(StartEchoButton);
+            groupBox2.Controls.Add(StopEchoButton);
+            groupBox2.Controls.Add(EchoServerAddrTextBox);
+            groupBox2.Controls.Add(label11);
+            groupBox2.Controls.Add(SpeedTestAddrTextBox);
+            groupBox2.Controls.Add(label6);
+            groupBox2.Controls.Add(label7);
+            groupBox2.Controls.Add(label8);
+            groupBox2.Controls.Add(label9);
+            groupBox2.Controls.Add(label10);
+            groupBox2.Controls.Add(SpeedTestButton);
+            groupBox2.Dock = DockStyle.Left;
+            groupBox2.Location = new Point(3, 3);
+            groupBox2.Name = "groupBox2";
+            groupBox2.Size = new Size(337, 373);
+            groupBox2.TabIndex = 4;
+            groupBox2.TabStop = false;
+            groupBox2.Text = "联机质量检测";
+            // 
+            // StartEchoButton
+            // 
+            StartEchoButton.Location = new Point(6, 192);
+            StartEchoButton.Name = "StartEchoButton";
+            StartEchoButton.Size = new Size(121, 43);
+            StartEchoButton.TabIndex = 12;
+            StartEchoButton.Text = "启动服务";
+            StartEchoButton.UseVisualStyleBackColor = true;
+            StartEchoButton.Click += StartEchoButton_Click;
+            // 
+            // StopEchoButton
+            // 
+            StopEchoButton.Location = new Point(211, 192);
+            StopEchoButton.Name = "StopEchoButton";
+            StopEchoButton.Size = new Size(120, 43);
+            StopEchoButton.TabIndex = 11;
+            StopEchoButton.Text = "关闭服务";
+            StopEchoButton.UseVisualStyleBackColor = true;
+            StopEchoButton.Click += StopEchoButton_Click;
+            // 
+            // EchoServerAddrTextBox
+            // 
+            EchoServerAddrTextBox.Location = new Point(6, 158);
+            EchoServerAddrTextBox.Name = "EchoServerAddrTextBox";
+            EchoServerAddrTextBox.ReadOnly = true;
+            EchoServerAddrTextBox.Size = new Size(325, 28);
+            EchoServerAddrTextBox.TabIndex = 10;
+            // 
+            // label11
+            // 
+            label11.AutoSize = true;
+            label11.Location = new Point(6, 136);
+            label11.Name = "label11";
+            label11.Size = new Size(99, 19);
+            label11.TabIndex = 9;
+            label11.Text = "我的地址:";
+            // 
+            // SpeedTestAddrTextBox
+            // 
+            SpeedTestAddrTextBox.Location = new Point(6, 57);
+            SpeedTestAddrTextBox.Name = "SpeedTestAddrTextBox";
+            SpeedTestAddrTextBox.Size = new Size(325, 28);
+            SpeedTestAddrTextBox.TabIndex = 8;
+            // 
+            // label6
+            // 
+            label6.AutoSize = true;
+            label6.Location = new Point(6, 247);
+            label6.Name = "label6";
+            label6.Size = new Size(0, 19);
+            label6.TabIndex = 7;
+            // 
+            // label7
+            // 
+            label7.AutoSize = true;
+            label7.Location = new Point(6, 202);
+            label7.Name = "label7";
+            label7.Size = new Size(0, 19);
+            label7.TabIndex = 6;
+            // 
+            // label8
+            // 
+            label8.AutoSize = true;
+            label8.Location = new Point(6, 88);
+            label8.Name = "label8";
+            label8.Size = new Size(169, 19);
+            label8.TabIndex = 5;
+            label8.Text = "Echo 服务器状态:";
+            // 
+            // label9
+            // 
+            label9.AutoSize = true;
+            label9.Location = new Point(6, 35);
+            label9.Name = "label9";
+            label9.Size = new Size(89, 19);
+            label9.TabIndex = 4;
+            label9.Text = "对方地址";
+            // 
+            // label10
+            // 
+            label10.AutoSize = true;
+            label10.Location = new Point(282, 88);
+            label10.Name = "label10";
+            label10.Size = new Size(49, 19);
+            label10.TabIndex = 0;
+            label10.Text = "未知";
+            // 
+            // SpeedTestButton
+            // 
+            SpeedTestButton.Location = new Point(6, 300);
+            SpeedTestButton.Name = "SpeedTestButton";
+            SpeedTestButton.Size = new Size(325, 56);
+            SpeedTestButton.TabIndex = 1;
+            SpeedTestButton.Text = "一键检测";
+            SpeedTestButton.UseVisualStyleBackColor = true;
+            SpeedTestButton.Click += SpeedTestButton_Click;
+            // 
             // ToolForm
             // 
             AutoScaleDimensions = new SizeF(9F, 18F);
@@ -477,6 +635,9 @@
             tabPage5.ResumeLayout(false);
             tableLayoutPanel3.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)FileTransferDataGridView).EndInit();
+            tabPage6.ResumeLayout(false);
+            groupBox2.ResumeLayout(false);
+            groupBox2.PerformLayout();
             ResumeLayout(false);
 
         }
@@ -514,5 +675,19 @@
         private TableLayoutPanel tableLayoutPanel2;
         private TableLayoutPanel tableLayoutPanel3;
         private RichTextBox StunHelpRichTextBox;
+        private TabPage tabPage6;
+        private RichTextBox SpeedTestRichTextBox;
+        private GroupBox groupBox2;
+        private Label label6;
+        private Label label7;
+        private Label label8;
+        private Label label9;
+        private Label label10;
+        private Button SpeedTestButton;
+        private TextBox EchoServerAddrTextBox;
+        private Label label11;
+        private TextBox SpeedTestAddrTextBox;
+        private Button StartEchoButton;
+        private Button StopEchoButton;
     }
 }
