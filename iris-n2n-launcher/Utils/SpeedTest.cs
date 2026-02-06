@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
+﻿using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace iris_n2n_launcher.Utils
 {
@@ -211,7 +206,7 @@ namespace iris_n2n_launcher.Utils
                                 }
                             }
                         }
-                        catch { /* Packet Loss */ }
+                        catch { }
 
                         await Task.Delay(PacketIntervalMs);
                     }
@@ -275,7 +270,7 @@ namespace iris_n2n_launcher.Utils
                         var sw = Stopwatch.StartNew();
                         try
                         {
-                            await stream.WriteAsync(payload, 0, payload.Length);
+                            await stream.WriteAsync(payload);
 
                             int totalRead = 0;
                             while (totalRead < PayloadSize)
