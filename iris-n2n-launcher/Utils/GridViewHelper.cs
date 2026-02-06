@@ -18,6 +18,11 @@ internal class GridViewHelper
         dataGridView.AllowUserToResizeColumns = false;
         dataGridView.AllowUserToResizeRows = false;
 
+        // 设置自动调整行高
+        dataGridView.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
+        dataGridView.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
+
+
         dataGridView.CellDoubleClick += (s, e) =>
         {
             if (e.RowIndex >= 0)

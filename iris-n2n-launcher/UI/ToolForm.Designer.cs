@@ -147,11 +147,11 @@
             // tabPage2
             // 
             tabPage2.Controls.Add(tlpNatMain);
-            tabPage2.Location = new Point(4, 28);
+            tabPage2.Location = new Point(4, 26);
             tabPage2.Margin = new Padding(5, 6, 5, 6);
             tabPage2.Name = "tabPage2";
             tabPage2.Padding = new Padding(5, 6, 5, 6);
-            tabPage2.Size = new Size(726, 379);
+            tabPage2.Size = new Size(726, 381);
             tabPage2.TabIndex = 1;
             tabPage2.Text = "NAT 类型检测";
             tabPage2.UseVisualStyleBackColor = true;
@@ -168,7 +168,7 @@
             tlpNatMain.Name = "tlpNatMain";
             tlpNatMain.RowCount = 1;
             tlpNatMain.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            tlpNatMain.Size = new Size(716, 367);
+            tlpNatMain.Size = new Size(716, 369);
             tlpNatMain.TabIndex = 9;
             // 
             // StunHelpRichTextBox
@@ -178,7 +178,7 @@
             StunHelpRichTextBox.Location = new Point(361, 3);
             StunHelpRichTextBox.Name = "StunHelpRichTextBox";
             StunHelpRichTextBox.ReadOnly = true;
-            StunHelpRichTextBox.Size = new Size(352, 361);
+            StunHelpRichTextBox.Size = new Size(352, 363);
             StunHelpRichTextBox.TabIndex = 8;
             StunHelpRichTextBox.Text = "";
             // 
@@ -188,7 +188,7 @@
             groupBox1.Dock = DockStyle.Fill;
             groupBox1.Location = new Point(3, 3);
             groupBox1.Name = "groupBox1";
-            groupBox1.Size = new Size(352, 361);
+            groupBox1.Size = new Size(352, 363);
             groupBox1.TabIndex = 3;
             groupBox1.TabStop = false;
             groupBox1.Text = "NAT 检测";
@@ -215,7 +215,7 @@
             tlpNatControls.RowStyles.Add(new RowStyle());
             tlpNatControls.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             tlpNatControls.RowStyles.Add(new RowStyle(SizeType.Absolute, 70F));
-            tlpNatControls.Size = new Size(346, 334);
+            tlpNatControls.Size = new Size(346, 336);
             tlpNatControls.TabIndex = 0;
             // 
             // label2
@@ -281,7 +281,7 @@
             // StunTestButton
             // 
             StunTestButton.Dock = DockStyle.Fill;
-            StunTestButton.Location = new Point(3, 267);
+            StunTestButton.Location = new Point(3, 269);
             StunTestButton.Name = "StunTestButton";
             StunTestButton.Size = new Size(340, 64);
             StunTestButton.TabIndex = 1;
@@ -313,7 +313,7 @@
             tableLayoutPanel1.Location = new Point(0, 0);
             tableLayoutPanel1.Name = "tableLayoutPanel1";
             tableLayoutPanel1.RowCount = 2;
-            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 45F));
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 60F));
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             tableLayoutPanel1.Size = new Size(726, 379);
             tableLayoutPanel1.TabIndex = 5;
@@ -325,25 +325,25 @@
             PingResultListBox.Font = new Font("黑体", 18F, FontStyle.Regular, GraphicsUnit.Point, 134);
             PingResultListBox.FormattingEnabled = true;
             PingResultListBox.ItemHeight = 24;
-            PingResultListBox.Location = new Point(3, 48);
+            PingResultListBox.Location = new Point(3, 63);
             PingResultListBox.Name = "PingResultListBox";
-            PingResultListBox.Size = new Size(720, 328);
+            PingResultListBox.Size = new Size(720, 313);
             PingResultListBox.TabIndex = 1;
             // 
             // PingIpBox
             // 
-            PingIpBox.Dock = DockStyle.Fill;
+            PingIpBox.Anchor = AnchorStyles.Left | AnchorStyles.Right;
             PingIpBox.Font = new Font("黑体", 16.2F, FontStyle.Regular, GraphicsUnit.Point, 134);
-            PingIpBox.Location = new Point(3, 3);
+            PingIpBox.Location = new Point(3, 14);
             PingIpBox.Name = "PingIpBox";
             PingIpBox.Size = new Size(429, 32);
             PingIpBox.TabIndex = 2;
             // 
             // PingUpDown
             // 
-            PingUpDown.Dock = DockStyle.Fill;
+            PingUpDown.Anchor = AnchorStyles.Left | AnchorStyles.Right;
             PingUpDown.Font = new Font("黑体", 16.2F, FontStyle.Regular, GraphicsUnit.Point, 134);
-            PingUpDown.Location = new Point(438, 3);
+            PingUpDown.Location = new Point(438, 14);
             PingUpDown.Name = "PingUpDown";
             PingUpDown.Size = new Size(102, 32);
             PingUpDown.TabIndex = 4;
@@ -351,10 +351,10 @@
             // 
             // PingTestButton
             // 
-            PingTestButton.Dock = DockStyle.Fill;
-            PingTestButton.Location = new Point(546, 3);
+            PingTestButton.Anchor = AnchorStyles.Left | AnchorStyles.Right;
+            PingTestButton.Location = new Point(546, 10);
             PingTestButton.Name = "PingTestButton";
-            PingTestButton.Size = new Size(177, 39);
+            PingTestButton.Size = new Size(177, 40);
             PingTestButton.TabIndex = 3;
             PingTestButton.Text = "Ping 测试";
             PingTestButton.UseVisualStyleBackColor = true;
@@ -363,9 +363,9 @@
             // tabPage4
             // 
             tabPage4.Controls.Add(tableLayoutPanel2);
-            tabPage4.Location = new Point(4, 28);
+            tabPage4.Location = new Point(4, 26);
             tabPage4.Name = "tabPage4";
-            tabPage4.Size = new Size(726, 379);
+            tabPage4.Size = new Size(726, 381);
             tabPage4.TabIndex = 5;
             tabPage4.Text = "端口映射";
             tabPage4.UseVisualStyleBackColor = true;
@@ -388,7 +388,7 @@
             tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Percent, 41F));
             tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Percent, 18F));
             tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Percent, 5F));
-            tableLayoutPanel2.Size = new Size(726, 379);
+            tableLayoutPanel2.Size = new Size(726, 381);
             tableLayoutPanel2.TabIndex = 4;
             // 
             // TcpUdpForwDataGridView
@@ -401,7 +401,7 @@
             TcpUdpForwDataGridView.RowHeadersWidth = 51;
             tableLayoutPanel2.SetRowSpan(TcpUdpForwDataGridView, 5);
             TcpUdpForwDataGridView.RowTemplate.Height = 27;
-            TcpUdpForwDataGridView.Size = new Size(660, 373);
+            TcpUdpForwDataGridView.Size = new Size(660, 375);
             TcpUdpForwDataGridView.TabIndex = 0;
             // 
             // TcpUdpForwDelButton
@@ -422,7 +422,7 @@
             TcpUdpForwReButton.Anchor = AnchorStyles.Top;
             TcpUdpForwReButton.FlatStyle = FlatStyle.Flat;
             TcpUdpForwReButton.Image = Properties.Resources.刷新;
-            TcpUdpForwReButton.Location = new Point(672, 293);
+            TcpUdpForwReButton.Location = new Point(672, 294);
             TcpUdpForwReButton.Margin = new Padding(3, 2, 3, 2);
             TcpUdpForwReButton.Name = "TcpUdpForwReButton";
             TcpUdpForwReButton.Size = new Size(48, 48);
@@ -446,9 +446,9 @@
             // tabPage5
             // 
             tabPage5.Controls.Add(tableLayoutPanel3);
-            tabPage5.Location = new Point(4, 28);
+            tabPage5.Location = new Point(4, 26);
             tabPage5.Name = "tabPage5";
-            tabPage5.Size = new Size(726, 379);
+            tabPage5.Size = new Size(726, 381);
             tabPage5.TabIndex = 4;
             tabPage5.Text = "隔空传递";
             tabPage5.UseVisualStyleBackColor = true;
@@ -471,7 +471,7 @@
             tableLayoutPanel3.RowStyles.Add(new RowStyle(SizeType.Percent, 41F));
             tableLayoutPanel3.RowStyles.Add(new RowStyle(SizeType.Percent, 18F));
             tableLayoutPanel3.RowStyles.Add(new RowStyle(SizeType.Percent, 5F));
-            tableLayoutPanel3.Size = new Size(726, 379);
+            tableLayoutPanel3.Size = new Size(726, 381);
             tableLayoutPanel3.TabIndex = 11;
             // 
             // FileTransferDataGridView
@@ -482,7 +482,7 @@
             FileTransferDataGridView.Location = new Point(3, 3);
             FileTransferDataGridView.Name = "FileTransferDataGridView";
             tableLayoutPanel3.SetRowSpan(FileTransferDataGridView, 5);
-            FileTransferDataGridView.Size = new Size(660, 373);
+            FileTransferDataGridView.Size = new Size(660, 375);
             FileTransferDataGridView.TabIndex = 7;
             // 
             // FileTransferAddButton
@@ -516,7 +516,7 @@
             FileTransferReButton.Anchor = AnchorStyles.Top;
             FileTransferReButton.FlatStyle = FlatStyle.Flat;
             FileTransferReButton.Image = Properties.Resources.刷新;
-            FileTransferReButton.Location = new Point(672, 293);
+            FileTransferReButton.Location = new Point(672, 294);
             FileTransferReButton.Margin = new Padding(3, 2, 3, 2);
             FileTransferReButton.Name = "FileTransferReButton";
             FileTransferReButton.Size = new Size(48, 48);
@@ -527,10 +527,10 @@
             // tabPage6
             // 
             tabPage6.Controls.Add(tlpSpeedMain);
-            tabPage6.Location = new Point(4, 28);
+            tabPage6.Location = new Point(4, 26);
             tabPage6.Name = "tabPage6";
             tabPage6.Padding = new Padding(3);
-            tabPage6.Size = new Size(726, 379);
+            tabPage6.Size = new Size(726, 381);
             tabPage6.TabIndex = 6;
             tabPage6.Text = "联机检测";
             tabPage6.UseVisualStyleBackColor = true;
@@ -547,7 +547,7 @@
             tlpSpeedMain.Name = "tlpSpeedMain";
             tlpSpeedMain.RowCount = 1;
             tlpSpeedMain.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            tlpSpeedMain.Size = new Size(720, 373);
+            tlpSpeedMain.Size = new Size(720, 375);
             tlpSpeedMain.TabIndex = 10;
             // 
             // SpeedTestRichTextBox
@@ -557,7 +557,7 @@
             SpeedTestRichTextBox.Location = new Point(363, 3);
             SpeedTestRichTextBox.Name = "SpeedTestRichTextBox";
             SpeedTestRichTextBox.ReadOnly = true;
-            SpeedTestRichTextBox.Size = new Size(354, 367);
+            SpeedTestRichTextBox.Size = new Size(354, 369);
             SpeedTestRichTextBox.TabIndex = 9;
             SpeedTestRichTextBox.Text = "联机质量测试  \n通过对方开启的 Echo 服务器进行检测  \n\n填写对方服务器地址 → 开始测试  \n\n说明：  \n- 此处填写 “对方” 的服务器地址  \n- 如无需对方测试你 无需自行启动服务\n";
             // 
@@ -567,7 +567,7 @@
             groupBox2.Dock = DockStyle.Fill;
             groupBox2.Location = new Point(3, 3);
             groupBox2.Name = "groupBox2";
-            groupBox2.Size = new Size(354, 367);
+            groupBox2.Size = new Size(354, 369);
             groupBox2.TabIndex = 4;
             groupBox2.TabStop = false;
             groupBox2.Text = "联机质量检测";
@@ -600,7 +600,7 @@
             tlpSpeedControls.RowStyles.Add(new RowStyle());
             tlpSpeedControls.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             tlpSpeedControls.RowStyles.Add(new RowStyle(SizeType.Absolute, 70F));
-            tlpSpeedControls.Size = new Size(348, 340);
+            tlpSpeedControls.Size = new Size(348, 342);
             tlpSpeedControls.TabIndex = 0;
             // 
             // label9
@@ -725,7 +725,7 @@
             // 
             tlpSpeedControls.SetColumnSpan(SpeedTestButton, 2);
             SpeedTestButton.Dock = DockStyle.Fill;
-            SpeedTestButton.Location = new Point(3, 273);
+            SpeedTestButton.Location = new Point(3, 275);
             SpeedTestButton.Name = "SpeedTestButton";
             SpeedTestButton.Size = new Size(342, 64);
             SpeedTestButton.TabIndex = 1;

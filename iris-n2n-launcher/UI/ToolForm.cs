@@ -4,7 +4,6 @@ using iris_n2n_launcher.Utils.FileTransfer;
 using STUN.Enums;
 using STUN.StunResult;
 using System.Text;
-using static iris_n2n_launcher.Utils.FirewallHelper;
 
 namespace iris_n2n_launcher.UI;
 
@@ -181,7 +180,7 @@ public partial class ToolForm : Form
         }
     }
 
-    private string FormatFileSize(long bytes)
+    private static string FormatFileSize(long bytes)
     {
         string[] sizes = { "B", "KB", "MB", "GB", "TB" };
         int order = 0;
@@ -196,7 +195,7 @@ public partial class ToolForm : Form
         return $"{size:0.##} {sizes[order]}";
     }
 
-    private string FormatTransferSpeed(double bytesPerSecond)
+    private static string FormatTransferSpeed(double bytesPerSecond)
     {
         string[] units = { "B/s", "KB/s", "MB/s", "GB/s" };
         int order = 0;
