@@ -93,7 +93,7 @@
             ShareButton.Name = "ShareButton";
             ShareButton.Size = new Size(111, 29);
             ShareButton.TabIndex = 2;
-            ShareButton.Text = "复制分享口令";
+            ShareButton.Text = "复制口令";
             ShareButton.UseVisualStyleBackColor = true;
             ShareButton.Click += ShareButton_Click;
             // 

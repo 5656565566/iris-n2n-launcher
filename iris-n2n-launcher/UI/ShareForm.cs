@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Runtime.InteropServices;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace iris_n2n_launcher.UI;
@@ -32,19 +33,73 @@ public partial class ShareForm : Form
         community = null;
     }
 
-    private void ShareButton_Click(object sender, EventArgs e)
+    private async void ShareButton_Click(object sender, EventArgs e)
     {
+        if (string.IsNullOrEmpty(ShareRichTextBox.Text))
+            return;
 
-        if (ShareRichTextBox.Text != "")
+        // 显示提示
+        ToolTip toolTip = new();
+        toolTip.Show("分享链接已复制到剪贴板", ShareButton, ShareButton.Width, ShareButton.Height, 2000);
+
+        var message = ShareRichTextBox.Text;
+
+        bool success = await CopyToClipboardAsync(message);
+
+        if (!success)
         {
-            ToolTip toolTip = new();
-            toolTip.Show("分享链接已复制到剪贴板", ShareButton, ShareButton.Width, ShareButton.Height, 2000);
-
-            var message = ShareRichTextBox.Text;
-            var t = new Thread(() => Clipboard.SetText(message));
-            t.SetApartmentState(ApartmentState.STA);
-            t.Start();
+            MessageBox.Show(this,
+                "剪贴板正被其他程序使用 请关闭远程桌面、文档或剪贴板管理工具后重试\n" +
+                "建议手动复制链接\n",
+                "复制失败",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Warning);
         }
+    }
+
+    private Task<bool> CopyToClipboardAsync(string text)
+    {
+        return Task.Run(() =>
+        {
+            for (int retry = 0; retry < 3; retry++)
+            {
+                try
+                {
+                    bool result = false;
+                    var thread = new Thread(() =>
+                    {
+                        try
+                        {
+                            try { Clipboard.Clear(); } catch { }
+                            Thread.Sleep(50);
+
+                            Clipboard.SetText(text);
+                            result = true;
+                        }
+                        catch (ExternalException)
+                        {
+                            result = false;
+                        }
+                    });
+
+                    thread.SetApartmentState(ApartmentState.STA);
+                    thread.Start();
+                    thread.Join(1000); // 等待最多1秒
+
+                    if (result)
+                        return true;
+                }
+                catch
+                {
+                    // 忽略异常，继续重试
+                }
+
+                if (retry < 4)
+                    Thread.Sleep(200);
+            }
+
+            return false;
+        });
     }
 
     private void JoinButton_Click(object sender, EventArgs e)
