@@ -101,10 +101,10 @@
             // 
             ShareRichTextBox.BorderStyle = BorderStyle.None;
             ShareRichTextBox.Dock = DockStyle.Fill;
-            ShareRichTextBox.Enabled = false;
             ShareRichTextBox.Location = new Point(4, 25);
             ShareRichTextBox.Margin = new Padding(4);
             ShareRichTextBox.Name = "ShareRichTextBox";
+            ShareRichTextBox.ReadOnly = true;
             ShareRichTextBox.Size = new Size(513, 102);
             ShareRichTextBox.TabIndex = 0;
             ShareRichTextBox.Text = "";
