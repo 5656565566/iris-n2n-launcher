@@ -1,4 +1,4 @@
-using System.Collections.Concurrent;
+ï»¿using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -31,10 +31,10 @@ public sealed class MinecraftLanProxy : IDisposable
 
     private MinecraftLanProxy() { }
 
-    private void RefreshLocalIPs() // ²»¸ºÔğ±¾µØ ip ±ä¸üµ«ÊÇ N2N ²»±ä¸üµÄÇé¿ö
+    private void RefreshLocalIPs() // ä¸è´Ÿè´£æœ¬åœ° ip å˜æ›´ä½†æ˜¯ N2N ä¸å˜æ›´çš„æƒ…å†µ
     {
         _localIps = TapNetworkManager.GetAllLocalIPs();
-        _localIps.Add("127.0.0.1"); // È·±£°üº¬»Ø»·µØÖ·
+        _localIps.Add("127.0.0.1"); // ç¡®ä¿åŒ…å«å›ç¯åœ°å€
     }
     private bool IsLocalMachineIp(IPAddress address)
     {
@@ -167,7 +167,7 @@ public sealed class MinecraftLanProxy : IDisposable
 
         if (!IsLocalMachineIp(result.RemoteEndPoint.Address))
         {
-            return; // ·Ç±¾»úIPµÄ¹ã²¥Ö±½Ó¶ªÆú
+            return; // éæœ¬æœºIPçš„å¹¿æ’­ç›´æ¥ä¸¢å¼ƒ
         }
 
         if (message.EndsWith(ProxySignature))

@@ -9,7 +9,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <ApplicationIcon>logo.ico</ApplicationIcon>
     <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
-	<VersionPrefix>3.4.2.3</VersionPrefix>
+	<VersionPrefix>3.4.2.6</VersionPrefix>
     <Authors>5656565566</Authors>
 	<Copyright>Copyright ‌©‌ Floral Linkage 2024-2026</Copyright>
     <Product>N2N 启动器</Product>

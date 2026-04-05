@@ -1,4 +1,4 @@
-using iris_n2n_launcher.UI;
+ï»¿using iris_n2n_launcher.UI;
 using iris_n2n_launcher.Utils;
 using iris_n2n_launcher.Utils.FileTransfer;
 using iris_n2n_launcher.Config;
@@ -26,7 +26,7 @@ internal static class Program
     ///  The main entry point for the application.
     /// </summary>
     [STAThread]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD103:Call async methods when in an async method", Justification = "<¹ÒÆğ>")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "VSTHRD103:Call async methods when in an async method", Justification = "<æŒ‚èµ·>")]
     static async Task Main(string[] args)
     {
         await FirewallManager.AllowProgramAsync("n2n", Environment.ProcessPath!);
@@ -37,17 +37,17 @@ internal static class Program
         
         Application.ThreadException += (s, e) => {
             string? stackTrace = e.Exception.StackTrace;
-            string message = $"Òì³£ÀàĞÍ UIÏß³ÌÒì³£: {e.Exception.Message}\n\nµ÷ÓÃÕ»:\n{stackTrace}\n·¢ËÍ´íÎóÈÕÖ¾¿ÉÒÔ°ïÖú¶¨Î»ÎÊÌâÅ¶";
-            MessageBox.Show(message, "N2N ·¢ÉúÁËÒ»¸öÒì³£", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            string message = $"å¼‚å¸¸ç±»å‹ UIçº¿ç¨‹å¼‚å¸¸: {e.Exception.Message}\n\nè°ƒç”¨æ ˆ:\n{stackTrace}\nå‘é€é”™è¯¯æ—¥å¿—å¯ä»¥å¸®åŠ©å®šä½é—®é¢˜å“¦";
+            MessageBox.Show(message, "N2N å‘ç”Ÿäº†ä¸€ä¸ªå¼‚å¸¸", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
             LogException(e.Exception);
         };
 
         AppDomain.CurrentDomain.UnhandledException += (s, e) => {
             var ex = e.ExceptionObject as Exception;
-            string stackTrace = ex?.StackTrace ?? "ÎŞµ÷ÓÃÕ»ĞÅÏ¢";
-            string message = $"Òì³£ÀàĞÍ ·ÇUIÏß³ÌÒì³£: {ex?.Message ?? "Î´Öª´íÎó"}\n\nµ÷ÓÃÕ»:\n{stackTrace}\n·¢ËÍ´íÎóÈÕÖ¾¿ÉÒÔ°ïÖú¶¨Î»ÎÊÌâÅ¶";
-            MessageBox.Show(message, "N2N ·¢ÉúÁËÒ»¸öÒì³£", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            string stackTrace = ex?.StackTrace ?? "æ— è°ƒç”¨æ ˆä¿¡æ¯";
+            string message = $"å¼‚å¸¸ç±»å‹ éUIçº¿ç¨‹å¼‚å¸¸: {ex?.Message ?? "æœªçŸ¥é”™è¯¯"}\n\nè°ƒç”¨æ ˆ:\n{stackTrace}\nå‘é€é”™è¯¯æ—¥å¿—å¯ä»¥å¸®åŠ©å®šä½é—®é¢˜å“¦";
+            MessageBox.Show(message, "N2N å‘ç”Ÿäº†ä¸€ä¸ªå¼‚å¸¸", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
             if (ex != null)
             {
@@ -57,7 +57,7 @@ internal static class Program
 
         if (args.Length < 1 && !mutex.WaitOne(TimeSpan.Zero, true))
         {
-            MessageBox.Show("Ó¦ÓÃ³ÌĞòÒÑÔÚÔËĞĞÖĞ¡£");
+            MessageBox.Show("åº”ç”¨ç¨‹åºå·²åœ¨è¿è¡Œä¸­ã€‚");
             return;
         }
         else if (args.Length > 0 && args[0].Contains("iris") && !mutex.WaitOne(TimeSpan.Zero, true))
@@ -117,7 +117,7 @@ internal static class Program
         {
             if (args.Error != null)
             {
-                MessageBox.Show($"¼ì²é¸üĞÂÊ§°Ü£º{args.Error.Message}", "¸üĞÂ´íÎó", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"æ£€æŸ¥æ›´æ–°å¤±è´¥ï¼š{args.Error.Message}", "æ›´æ–°é”™è¯¯", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
@@ -130,14 +130,14 @@ internal static class Program
                 bool isMandatory = args.Mandatory != null && args.Mandatory.Value;
 
                 var message = isMandatory
-                    ? $"·¢ÏÖ±ØĞë°²×°µÄĞÂ°æ±¾ {args.InstalledVersion} -> {args.CurrentVersion}"
-                    : $"·¢ÏÖĞÂ°æ±¾ {args.InstalledVersion}£¬ÊÇ·ñ¸üĞÂµ½ {args.CurrentVersion}£¿";
+                    ? $"å‘ç°å¿…é¡»å®‰è£…çš„æ–°ç‰ˆæœ¬ {args.InstalledVersion} -> {args.CurrentVersion}"
+                    : $"å‘ç°æ–°ç‰ˆæœ¬ {args.InstalledVersion}ï¼Œæ˜¯å¦æ›´æ–°åˆ° {args.CurrentVersion}ï¼Ÿ";
 
                 var buttons = isMandatory ? MessageBoxButtons.OK : MessageBoxButtons.YesNo;
 
                 var result = MessageBox.Show(
                     message,
-                    "Èí¼ş¸üĞÂ",
+                    "è½¯ä»¶æ›´æ–°",
                     buttons,
                     isMandatory ? MessageBoxIcon.Warning : MessageBoxIcon.Question);
 
@@ -156,7 +156,7 @@ internal static class Program
         AutoUpdater.TopMost = true;
         AutoUpdater.Synchronous = true;
 
-        AutoUpdater.ClearAppDirectory = false; // ²»ÇåÀíÄ¿Â¼
+        AutoUpdater.ClearAppDirectory = false; // ä¸æ¸…ç†ç›®å½•
 
         if (config.VersionUpdate)
         {
@@ -224,15 +224,15 @@ internal static class Program
         try
         {
             string logContent = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}]\n" +
-                                $"Òì³£ÀàĞÍ: {ex.GetType().FullName}\n" +
-                                $"Òì³£ÏûÏ¢: {ex.Message}\n" +
-                                $"µ÷ÓÃÕ»:\n{ex.StackTrace}\n\n";
+                                $"å¼‚å¸¸ç±»å‹: {ex.GetType().FullName}\n" +
+                                $"å¼‚å¸¸æ¶ˆæ¯: {ex.Message}\n" +
+                                $"è°ƒç”¨æ ˆ:\n{ex.StackTrace}\n\n";
 
             logHelper.Error(logContent);
         }
         catch
         {
-            // ±ÜÃâÈÕÖ¾¼ÇÂ¼±¾ÉíÒı·¢Òì³£
+            // é¿å…æ—¥å¿—è®°å½•æœ¬èº«å¼•å‘å¼‚å¸¸
         }
     }
     private static bool TrySendToRunningInstance(string link)
@@ -254,7 +254,7 @@ internal static class Program
         }
         catch (TimeoutException)
         {
-            // Ã»ÓĞÕÒµ½ÔËĞĞÖĞµÄÊµÀı
+            // æ²¡æœ‰æ‰¾åˆ°è¿è¡Œä¸­çš„å®ä¾‹
             return false;
         }
         catch
@@ -301,7 +301,7 @@ internal static class Program
                         pipeName,
                         PipeDirection.InOut,
                         1,
-                        PipeTransmissionMode.Message, // Ê¹ÓÃÏûÏ¢Ä£Ê½
+                        PipeTransmissionMode.Message, // ä½¿ç”¨æ¶ˆæ¯æ¨¡å¼
                         PipeOptions.Asynchronous);
 
                     serverPipe.WaitForConnection();

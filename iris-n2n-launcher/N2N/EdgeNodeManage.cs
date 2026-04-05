@@ -1,4 +1,4 @@
-using iris_n2n_launcher.Utils;
+ï»¿using iris_n2n_launcher.Utils;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using static iris_n2n_launcher.Utils.FirewallHelper;
@@ -42,11 +42,11 @@ public class EdgeNodeManage : IDisposable
     }
 
     /// <summary>
-    /// Æô¶¯Ò»¸öĞÂµÄn2n½Úµã
+    /// å¯åŠ¨ä¸€ä¸ªæ–°çš„n2nèŠ‚ç‚¹
     /// </summary>
-    /// <param name="id">Î¨Ò»±êÊ¶·û</param>
-    /// <param name="parameters">Æô¶¯²ÎÊı</param>
-    /// <returns>ÊÇ·ñÆô¶¯³É¹¦</returns>
+    /// <param name="id">å”¯ä¸€æ ‡è¯†ç¬¦</param>
+    /// <param name="parameters">å¯åŠ¨å‚æ•°</param>
+    /// <returns>æ˜¯å¦å¯åŠ¨æˆåŠŸ</returns>
     public async Task<int> StartNodeAsync(string id, N2NConfiguration parameters)
     {
         await TapNetworkManager.EnsureTapAdapterExistsAsync();
@@ -65,7 +65,7 @@ public class EdgeNodeManage : IDisposable
 
         if (_activeNodes.ContainsKey(id))
         {
-            return 10; // ÒÑ´æÔÚÏàÍ¬IDµÄ½Úµã
+            return 10; // å·²å­˜åœ¨ç›¸åŒIDçš„èŠ‚ç‚¹
         }
 
         int managementPort = PortUtility.GetRandomUnusedPort(5000, 8000);
@@ -76,10 +76,10 @@ public class EdgeNodeManage : IDisposable
 
         if (availableAdapter == null)
         {
-            return 11; // Ã»ÓĞ¿ÉÓÃµÄÎ´Ê¹ÓÃÍø¿¨
+            return 11; // æ²¡æœ‰å¯ç”¨çš„æœªä½¿ç”¨ç½‘å¡
         }
 
-        if (parameters.DeviceName == "" || parameters.DeviceName == null) // ×Ô¶¯·ÖÅä
+        if (parameters.DeviceName == "" || parameters.DeviceName == null) // è‡ªåŠ¨åˆ†é…
         {
             parameters.DeviceName = availableAdapter.Id;
         }
@@ -93,7 +93,7 @@ public class EdgeNodeManage : IDisposable
         if (process == null)
         {
             usedAdapters.Remove(parameters.DeviceName);
-            return 12; // ½ø³Ì´´½¨Ê§°Ü
+            return 12; // è¿›ç¨‹åˆ›å»ºå¤±è´¥
         }
 
         var udpManager = new EdgeUdpManage(managementPort);
@@ -108,19 +108,19 @@ public class EdgeNodeManage : IDisposable
             StartTime = DateTime.Now
         };
 
-        FetchNodeInfo(nodeInfo); // Á¢¼´³¢ÊÔ»ñÈ¡ĞÅÏ¢
+        FetchNodeInfo(nodeInfo); // ç«‹å³å°è¯•è·å–ä¿¡æ¯
 
         if (!_activeNodes.TryAdd(id, nodeInfo))
         {
             usedAdapters.Remove(parameters.DeviceName);
-            return 13; // ĞÅÏ¢Ìí¼ÓÊ§°Ü
+            return 13; // ä¿¡æ¯æ·»åŠ å¤±è´¥
         }
 
         return 0;
     }
 
     /// <summary>
-    /// Í£Ö¹Ö¸¶¨½Úµã
+    /// åœæ­¢æŒ‡å®šèŠ‚ç‚¹
     /// </summary>
     public bool StopNode(string id)
     {
@@ -153,7 +153,7 @@ public class EdgeNodeManage : IDisposable
     }
 
     /// <summary>
-    /// »ñÈ¡ËùÓĞ»î¶¯½Úµã
+    /// è·å–æ‰€æœ‰æ´»åŠ¨èŠ‚ç‚¹
     /// </summary>
     public ConcurrentDictionary<string, EdgeNodeInfo> GetActiveNodes()
     {
@@ -161,7 +161,7 @@ public class EdgeNodeManage : IDisposable
     }
 
     /// <summary>
-    /// »ñÈ¡Ö¸¶¨½ÚµãĞÅÏ¢
+    /// è·å–æŒ‡å®šèŠ‚ç‚¹ä¿¡æ¯
     /// </summary>
     public EdgeNodeInfo? GetNodeInfo(string id)
     {
@@ -170,7 +170,7 @@ public class EdgeNodeManage : IDisposable
     }
 
     /// <summary>
-    /// Æô¶¯½Úµã¼à¿Ø
+    /// å¯åŠ¨èŠ‚ç‚¹ç›‘æ§
     /// </summary>
     private void StartMonitor()
     {
@@ -215,7 +215,7 @@ public class EdgeNodeManage : IDisposable
     }
 
     /// <summary>
-    /// »ñÈ¡½ÚµãĞÅÏ¢
+    /// è·å–èŠ‚ç‚¹ä¿¡æ¯
     /// </summary>
     private void FetchNodeInfo(EdgeNodeInfo nodeInfo)
     {
@@ -247,10 +247,10 @@ public class EdgeNodeManage : IDisposable
     }
 
     /// <summary>
-    /// ÑéÖ¤Ö¸¶¨µÄÍø¿¨±êÊ¶·ûÊÇ·ñÒÑ¾­ÔÚÊ¹ÓÃ
+    /// éªŒè¯æŒ‡å®šçš„ç½‘å¡æ ‡è¯†ç¬¦æ˜¯å¦å·²ç»åœ¨ä½¿ç”¨
     /// </summary>
-    /// <param name="adapterId">Íø¿¨±êÊ¶·û</param>
-    /// <returns>ÊÇ·ñÒÑ¾­ÔÚÊ¹ÓÃ</returns>
+    /// <param name="adapterId">ç½‘å¡æ ‡è¯†ç¬¦</param>
+    /// <returns>æ˜¯å¦å·²ç»åœ¨ä½¿ç”¨</returns>
     public bool IsAdapterUsed(string adapterId)
     {
         return usedAdapters.Contains(adapterId);
