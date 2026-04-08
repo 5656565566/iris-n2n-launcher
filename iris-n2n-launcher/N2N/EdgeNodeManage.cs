@@ -86,7 +86,13 @@ public class EdgeNodeManage : IDisposable
 
         usedAdapters.Add(parameters.DeviceName);
 
-        var fullParameters = $"-t {managementPort} {parameters}";
+        if (!parameters.TryBuildArguments(out var edgeArguments, out var validationErrors))
+        {
+            usedAdapters.Remove(parameters.DeviceName);
+            throw new InvalidOperationException(string.Join(Environment.NewLine, validationErrors));
+        }
+
+        var fullParameters = $"-t {managementPort} {edgeArguments}";
 
         var process = _exeHelper.CreateProcess(EXE, fullParameters);
 

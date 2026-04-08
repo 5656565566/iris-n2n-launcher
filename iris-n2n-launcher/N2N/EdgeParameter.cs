@@ -2,6 +2,13 @@
 using System.Text;
 
 namespace iris_n2n_launcher.N2N;
+
+public sealed class N2NConfigurationValidationResult
+{
+    public bool IsValid => Errors.Count == 0;
+    public List<string> Errors { get; } = [];
+}
+
 public class N2NConfiguration
 {
     /// <summary>
@@ -175,166 +182,245 @@ public class N2NConfiguration
     /// </summary>
     public int InterfaceMetric { get; set; } = 0;
 
-    public override string ToString()
+    public N2NConfigurationValidationResult Validate()
     {
-        string parameter = "";
+        var result = new N2NConfigurationValidationResult();
 
-        if (Community != "")
+        if (string.IsNullOrWhiteSpace(Community))
         {
-            parameter = $"-c {Community} {parameter}";
-        }
-        else
-        {
-            return "参数非法-请填写房间名";
+            result.Errors.Add("参数非法-请填写房间名");
         }
 
-        if (SuperNodeHostAndPort != "")
+        if (string.IsNullOrWhiteSpace(SuperNodeHostAndPort))
         {
-            if (SuperNodeHostAndPort.Contains(":"))
-            {
-                parameter = $"-l {SuperNodeHostAndPort} {parameter}";
-            }
-            else
-            {
-                parameter = $"-l {SuperNodeHostAndPort}:7654 {parameter}";
-            }
-        }
-        else
-        {
-            return "参数非法-请检查服务器选项";
+            result.Errors.Add("参数非法-请检查服务器选项");
         }
 
-        if (LocalUDPPort != "")
+        return result;
+    }
+
+    public bool TryBuildArguments(out string arguments, out IReadOnlyList<string> errors)
+    {
+        var validationResult = Validate();
+        if (!validationResult.IsValid)
         {
-            parameter = $"-p {SuperNodeHostAndPort} {parameter}";
+            arguments = string.Empty;
+            errors = validationResult.Errors;
+            return false;
+        }
+
+        var args = new List<string>();
+
+        AppendOptionWithValue(args, "-c", Community);
+        AppendOptionWithValue(args, "-l", NormalizeSuperNodeHostAndPort(SuperNodeHostAndPort));
+
+        if (!string.IsNullOrWhiteSpace(LocalUDPPort))
+        {
+            AppendOptionWithValue(args, "-p", LocalUDPPort);
         }
 
         if (EnablePMTUDiscovery)
         {
-            parameter = $"-D {parameter}";
+            args.Add("-D");
         }
 
-        if (LocalIPAdvertisement != "")
+        if (!string.IsNullOrWhiteSpace(LocalIPAdvertisement))
         {
-            parameter = $"-e {LocalIPAdvertisement} {parameter}";
+            AppendOptionWithValue(args, "-e", LocalIPAdvertisement);
         }
 
-        if (SuperNodeConnectionType != "" && EnablePacketForwarding)
+        if (!string.IsNullOrWhiteSpace(SuperNodeConnectionType) && EnablePacketForwarding)
         {
-            parameter = $"-{SuperNodeConnectionType} {parameter}";
+            args.Add($"-{SuperNodeConnectionType}");
         }
 
         if (RegistrationInterval != 0)
         {
-            parameter = $"-i {SuperNodeConnectionType} {parameter}";
+            AppendOptionWithValue(args, "-i", RegistrationInterval.ToString());
         }
 
         if (RegistrationTTL != 0)
         {
-            parameter = $"-L {RegistrationTTL} {parameter}";
+            AppendOptionWithValue(args, "-L", RegistrationTTL.ToString());
         }
 
-        if (EncryptionKey != "")
+        if (!string.IsNullOrWhiteSpace(EncryptionKey))
         {
-            parameter = $"-k {EncryptionKey} {parameter}";
+            AppendOptionWithValue(args, "-k", EncryptionKey);
         }
 
         if (DisablePayloadEncryption)
         {
-            parameter = $"-A1 {parameter}";
+            args.Add("-A1");
         }
 
-        if (PayloadEncryptionAlgorithm != "")
+        if (!string.IsNullOrWhiteSpace(PayloadEncryptionAlgorithm))
         {
-            parameter = $"-{PayloadEncryptionAlgorithm} {parameter}";
+            args.Add($"-{PayloadEncryptionAlgorithm}");
         }
 
         if (UseHeaderEncryption)
         {
-            parameter = $"-H {parameter}";
+            args.Add("-H");
         }
 
-        if (OutgoingDataCompression != "")
+        if (!string.IsNullOrWhiteSpace(OutgoingDataCompression))
         {
-            parameter = $"-{OutgoingDataCompression} {parameter}";
+            args.Add($"-{OutgoingDataCompression}");
         }
 
         if (SelectSuperNodeByRTT)
         {
-            parameter = $"--select-rtt {parameter}";
+            args.Add("--select-rtt");
         }
 
         if (SelectSuperNodeByMAC)
         {
-            parameter = $"--select-mac {parameter}";
+            args.Add("--select-mac");
         }
 
-        if (InterfaceAddress != "" && STATICAddress)
+        if (!string.IsNullOrWhiteSpace(InterfaceAddress) && STATICAddress)
         {
-            parameter = $"-a {InterfaceAddress} {parameter}";
+            AppendOptionWithValue(args, "-a", InterfaceAddress);
         }
 
-        if (MacAddress != "")
+        if (!string.IsNullOrWhiteSpace(MacAddress))
         {
-            parameter = $"-m {MacAddress} {parameter}";
+            AppendOptionWithValue(args, "-m", MacAddress);
         }
 
-        if (DeviceName != "")
+        if (!string.IsNullOrWhiteSpace(DeviceName))
         {
-            parameter = $"-d {DeviceName} {parameter}";
+            AppendOptionWithValue(args, "-d", DeviceName);
         }
 
         if (MTU != 0)
         {
-            parameter = $"-M {MTU} {parameter}";
+            AppendOptionWithValue(args, "-M", MTU.ToString());
         }
 
         if (EnablePacketForwarding)
         {
-            parameter = $"-r {parameter}";
+            args.Add("-r");
         }
 
         if (AcceptMulticastMAC)
         {
-            parameter = $"-E {parameter}";
+            args.Add("-E");
         }
 
-        if (UserPassword != "")
+        if (!string.IsNullOrWhiteSpace(UserPassword))
         {
-            parameter = $"-J {UserPassword} {parameter}";
+            AppendOptionWithValue(args, "-J", UserPassword);
         }
 
-        if (UserPublicKey != "")
+        if (!string.IsNullOrWhiteSpace(UserPublicKey))
         {
-            parameter = $"-P {UserPublicKey} {parameter}";
+            AppendOptionWithValue(args, "-P", UserPublicKey);
         }
 
-        if (PacketFilterRules != "" && UsePacketFilterRules)
+        if (!string.IsNullOrWhiteSpace(PacketFilterRules) && UsePacketFilterRules)
         {
-            parameter = $"-R {PacketFilterRules.Replace('\n', ' ')} {parameter}";
+            AppendOptionWithValue(args, "-R", PacketFilterRules.Replace('\n', ' '));
         }
 
         if (InterfaceMetric != 0)
         {
-            parameter = $"-x {InterfaceMetric} {parameter}";
+            AppendOptionWithValue(args, "-x", InterfaceMetric.ToString());
         }
-        if (Description != "")
+
+        AppendOptionWithValue(args, "-I", BuildDescriptionValue());
+
+        arguments = string.Join(" ", args.Select(EscapeCommandLineArgument));
+        errors = Array.Empty<string>();
+        return true;
+    }
+
+    public override string ToString()
+    {
+        if (!TryBuildArguments(out var arguments, out var errors))
+        {
+            return string.Join(Environment.NewLine, errors);
+        }
+
+        return arguments;
+    }
+
+    private static void AppendOptionWithValue(ICollection<string> args, string option, string value)
+    {
+        args.Add(option);
+        args.Add(value);
+    }
+
+    private static string NormalizeSuperNodeHostAndPort(string value)
+    {
+        return value.Contains(':') ? value : $"{value}:7654";
+    }
+
+    private string BuildDescriptionValue()
+    {
+        if (!string.IsNullOrWhiteSpace(Description))
         {
             byte[] unicodeBytes = Encoding.Unicode.GetBytes(Description);
             string unicodeString = Encoding.Unicode.GetString(unicodeBytes);
-            parameter = $"-I {ConvertNonAsciiToUnicode(unicodeString)}-{MachineCode.Generate()} {parameter}";
-
+            return $"{ConvertNonAsciiToUnicode(unicodeString)}-{MachineCode.Generate()}";
         }
-        else
+
+        return MachineCode.Generate();
+    }
+
+    private static string EscapeCommandLineArgument(string argument)
+    {
+        if (string.IsNullOrEmpty(argument))
         {
-            parameter = $"-I {MachineCode.Generate()} {parameter}";
+            return "\"\"";
         }
 
-        return parameter;
+        if (!argument.Any(ch => char.IsWhiteSpace(ch) || ch == '"'))
+        {
+            return argument;
+        }
+
+        var builder = new StringBuilder();
+        builder.Append('"');
+
+        int backslashCount = 0;
+        foreach (char ch in argument)
+        {
+            if (ch == '\\')
+            {
+                backslashCount++;
+                continue;
+            }
+
+            if (ch == '"')
+            {
+                builder.Append(new string('\\', backslashCount * 2 + 1));
+                builder.Append('"');
+                backslashCount = 0;
+                continue;
+            }
+
+            if (backslashCount > 0)
+            {
+                builder.Append(new string('\\', backslashCount));
+                backslashCount = 0;
+            }
+
+            builder.Append(ch);
+        }
+
+        if (backslashCount > 0)
+        {
+            builder.Append(new string('\\', backslashCount * 2));
+        }
+
+        builder.Append('"');
+        return builder.ToString();
     }
     public static string ConvertNonAsciiToUnicode(string input)
     {
-        StringBuilder output = new StringBuilder();
+        StringBuilder output = new();
 
         foreach (char c in input)
         {
