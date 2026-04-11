@@ -1,7 +1,6 @@
 ﻿using iris_n2n_launcher.Config;
 using iris_n2n_launcher.N2N;
 using iris_n2n_launcher.Utils;
-using System.Linq;
 
 namespace iris_n2n_launcher.UI;
 
@@ -50,10 +49,10 @@ public partial class MultipleEdgeForm : Form
 
             List<float> columnWeights =
             [
-                2, 3, 3
+                2, 3, 3, 3, 4
             ];
 
-            List<List<string>> nodesInfo = [["info", "序号", "房间名", "ip地址"]];
+            List<List<string>> nodesInfo = [["info", "序号", "房间名", "状态", "最近错误"]];
 
             foreach (var node in nodes)
             {
@@ -62,14 +61,10 @@ public partial class MultipleEdgeForm : Form
                     continue;
                 }
 
-                string ip4addr = "未知";
+                string statusText = node.Value.LastStatusText ?? node.Value.Status?.Ip4Addr ?? "未知";
+                string lastError = node.Value.LastErrorMessage ?? node.Value.LastWarningMessage ?? string.Empty;
 
-                if (node.Value.Status != null)
-                {
-                    ip4addr = (string)node.Value.Status.ip4addr;
-                }
-
-                nodesInfo.Add([node.Value.Id, node.Value.Id, node.Value.Parameters.Community, ip4addr]);
+                nodesInfo.Add([node.Value.Id, node.Value.Id, node.Value.Parameters.Community, statusText, lastError]);
             }
 
             GridViewHelper.UpdateData(NodeDataGridView, nodesInfo, columnWeights);
@@ -123,29 +118,11 @@ public partial class MultipleEdgeForm : Form
             return;
         }
 
-        int states = await edgeNodeManage.StartNodeAsync(nodeName, n2NConfiguration);
+        var startResult = await edgeNodeManage.StartNodeAsync(nodeName, n2NConfiguration);
 
-        if (states == 10)
+        if (!startResult.Success)
         {
-            MessageBox.Show("检测到重复启动...");
-            return;
-        }
-
-        if (states == 11)
-        {
-            MessageBox.Show("未能自动发现可用网卡...\n或许前往设置添加一个?");
-            return;
-        }
-
-        if (states == 12)
-        {
-            MessageBox.Show("进程创建失败...");
-            return;
-        }
-
-        if (states == 13)
-        {
-            MessageBox.Show("添加到节点列表失败...");
+            MessageBox.Show(startResult.Message ?? "节点启动失败...");
             return;
         }
     }

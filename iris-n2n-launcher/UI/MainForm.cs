@@ -15,9 +15,7 @@ public partial class MainForm : Form
     private readonly EdgeNodeManage edgeNodeManage = EdgeNodeManage.Instance;
     private readonly string nodeName = "n2n";
     private readonly ConfigManager configManager = ConfigManager.Instance;
-    private static readonly TapNetworkManager tapNetworkManager = new();
     private static readonly MinecraftLanProxy minecraftLanProxy = MinecraftLanProxy.Instance;
-    private static readonly FileTransferService fileTransferService = FileTransferService.Instance;
     private static readonly BackgroundEventManager eventManager = new();
     private static int seletMode = 0;
     public string? share;
@@ -40,75 +38,37 @@ public partial class MainForm : Form
 
     private void MianInfo()
     {
-        IPtextBox.Invoke(new Action(() => { MianEdge(); }));
+        IPtextBox.Invoke(new Action(MianEdge));
     }
 
     private void MianEdge()
     {
         var nodes = edgeNodeManage.GetActiveNodes();
+        var mainNode = nodes.TryGetValue("n2n", out var nodeInfo) ? nodeInfo : null;
+        int otherNodeCount = nodes.Keys.Count(key => key != "n2n");
 
-        int active = 1; // 无节点运行
-
-        foreach (var node in nodes)
+        if (mainNode != null)
         {
-            if (node.Key == "n2n")
-            {
-                active *= -1; // 主节点运行中计数为负
-            }
-            else
-            {
-                if (active > 0)
-                {
-                    active += 1;
-                }
-                else
-                {
-                    active -= 1;
-                }
-            }
+            IPtextBox.Text = mainNode.Status?.Ip4Addr ?? string.Empty;
+            SwitchButton.Text = mainNode.LastStatusText ?? "正在运行";
+            SwitchButton.Enabled = false;
+            StopButton.Enabled = true;
+            return;
         }
 
-        if (active < 1)
-        {
-            
-        }
-
-        if (active > 1)
+        if (otherNodeCount > 0)
         {
             IPtextBox.Text = "其他节点运行中...";
+            return;
         }
 
-        if (active == 1)
+        if (!string.IsNullOrEmpty(IPtextBox.Text))
         {
-            if (IPtextBox.Text != "")
-            {
-                MessageBox.Show("所有节点已关闭...");
-                StopMainEdge();
-            }
-        }
-
-        if (active == -1)
-        {
-            foreach (var node in nodes)
-            {
-                if(node.Key == "n2n")
-                {
-                    try
-                    {
-                        IPtextBox.Text = node.Value.Status.ip4addr;
-                    }
-                    catch
-                    {
-
-                    }
-                    SwitchButton.Text = "正在运行";
-                    SwitchButton.Enabled = false;
-                    StopButton.Enabled = true;
-                }
-            }
-
+            MessageBox.Show("所有节点已关闭...");
+            StopMainEdge();
         }
     }
+
 
     private void ProcessSharingLink(string link)
     {
@@ -206,14 +166,17 @@ public partial class MainForm : Form
         {
             case WM_QUERYENDSESSION:
                 exitN2N = true;
-                Environment.Exit(0);
-                break;
+                BeginInvoke(new Action(() => Close()));
+                m.Result = new IntPtr(1);
+                return;
 
             case WM_ENDSESSION:
                 if (m.WParam != IntPtr.Zero)
                 {
                     exitN2N = true;
-                    Environment.Exit(0);
+                    BeginInvoke(new Action(() => Close()));
+                    m.Result = IntPtr.Zero;
+                    return;
                 }
                 break;
         }
@@ -253,33 +216,12 @@ public partial class MainForm : Form
         SwitchButton.Text = "启动中...";
         SwitchButton.Enabled = false;
 
-        int states = await edgeNodeManage.StartNodeAsync(nodeName, n2NConfiguration);
+        var startResult = await edgeNodeManage.StartNodeAsync(nodeName, n2NConfiguration);
 
-        if (states == 10)
+        if (!startResult.Success)
         {
             StopMainEdge();
-            MessageBox.Show("检测到重复启动...");
-            return;
-        }
-
-        if (states == 11)
-        {
-            StopMainEdge();
-            MessageBox.Show("未能自动发现可用网卡...\n请前往设置 虚拟网卡列表\n添加一个虚拟网卡");
-            return;
-        }
-
-        if (states == 12)
-        {
-            StopMainEdge();
-            MessageBox.Show("进程创建失败...");
-            return;
-        }
-
-        if (states == 13)
-        {
-            StopMainEdge();
-            MessageBox.Show("添加到节点列表失败...");
+            MessageBox.Show(startResult.Message ?? "节点启动失败...");
             return;
         }
 
@@ -298,9 +240,10 @@ public partial class MainForm : Form
 
                     SwitchButton.Invoke(() =>
                     {
-                        if (nodeInfo != null && nodeInfo.Status != null)
+                        if (nodeInfo != null && (!string.IsNullOrWhiteSpace(nodeInfo.LastStatusText) || nodeInfo.Status != null))
                         {
-                            IPtextBox.Text = nodeInfo!.Status!.ip4addr;
+                            IPtextBox.Text = nodeInfo.Status?.Ip4Addr ?? string.Empty;
+                            SwitchButton.Text = nodeInfo.LastStatusText ?? "启动中...";
                             StopButton.Enabled = true;
                             tryTimes = 0;
                         }

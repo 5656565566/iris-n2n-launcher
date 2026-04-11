@@ -1,4 +1,4 @@
-using Newtonsoft.Json;
+ï»¿using Newtonsoft.Json;
 using System.Reflection;
 
 namespace iris_n2n_launcher.Config;
@@ -6,47 +6,47 @@ namespace iris_n2n_launcher.Config;
 public class Configuration
 {
     /// <summary>
-    /// Ê¹ÓÃµÄÅäÖÃÎÄ¼ş
+    /// ä½¿ç”¨çš„é…ç½®æ–‡ä»¶
     /// </summary>
     public string ConfigName { set; get; } = "default";
     /// <summary>
-    /// ¹ã²¥ĞŞ¸´
+    /// å¹¿æ’­ä¿®å¤
     /// </summary>
     public bool BroadcastRepair { set; get; } = true;
     /// <summary>
-    /// ¸ô¿ÕÍ¶ËÍ
+    /// éš”ç©ºæŠ•é€
     /// </summary>
     public bool Airportal { set; get; } = false;
     /// <summary>
-    /// ¶Ë¿ÚÓ³Éä
+    /// ç«¯å£æ˜ å°„
     /// </summary>
     public bool TcpUdpForw { set; get; } = false;
     /// <summary>
-    /// ¿ªÆôÊ±¹Ø±Õ·À»ğÇ½
+    /// å¼€å¯æ—¶å…³é—­é˜²ç«å¢™
     /// </summary>
     public bool DisableFirewallOnRun { set; get; } = false;
     /// <summary>
-    /// ÎÒµÄÊÀ½ç·¿¼ä×ª·¢
+    /// æˆ‘çš„ä¸–ç•Œæˆ¿é—´è½¬å‘
     /// </summary>
     public bool Minecraft { set; get; } = false;
     /// <summary>
-    /// ¹Ø±ÕµÄÊ±ºò¿ªÆô·À»ğÇ½
+    /// å…³é—­çš„æ—¶å€™å¼€å¯é˜²ç«å¢™
     /// </summary>
     public bool FirewallEnabledOnExit { set; get; } = false;
     /// <summary>
-    /// ×¢²áirisÁ´½Ó
+    /// æ³¨å†Œirisé“¾æ¥
     /// </summary>
     public bool UrlRegister { set; get; } = false;
     /// <summary>
-    /// ¸üĞÂ¼ì²é
+    /// æ›´æ–°æ£€æŸ¥
     /// </summary>
     public bool VersionUpdate { set; get; } = true;
     /// <summary>
-    /// ÓÃ»§×Ô¶¨Òå·şÎñÆ÷ÁĞ±í¡£
+    /// ç”¨æˆ·è‡ªå®šä¹‰æœåŠ¡å™¨åˆ—è¡¨ã€‚
     /// </summary>
     public List<string> UserServerList { get; set; } = [];
     /// <summary>
-    /// ÔÚÏß¸üĞÂµÄ·şÎñÆ÷ÁĞ±í¡£
+    /// åœ¨çº¿æ›´æ–°çš„æœåŠ¡å™¨åˆ—è¡¨ã€‚
     /// </summary>
     public List<string> OnlineServerList { get; set; } = [];
 }
@@ -113,7 +113,7 @@ public sealed class ConfigManager
     }
 
     /// <summary>
-    /// »ñÈ¡ËùÓĞÅäÖÃÁĞ±í
+    /// è·å–æ‰€æœ‰é…ç½®åˆ—è¡¨
     /// </summary>
     public IEnumerable<string?> ListConfigs()
     {
@@ -125,7 +125,7 @@ public sealed class ConfigManager
     }
 
     /// <summary>
-    /// ¼ì²éÅäÖÃÊÇ·ñ´æÔÚ
+    /// æ£€æŸ¥é…ç½®æ˜¯å¦å­˜åœ¨
     /// </summary>
     public bool ConfigExists(string configName)
     {
@@ -137,7 +137,7 @@ public sealed class ConfigManager
     }
 
     /// <summary>
-    /// ½«¶ÔÏóĞòÁĞ»¯ÎªJSON×Ö·û´®
+    /// å°†å¯¹è±¡åºåˆ—åŒ–ä¸ºJSONå­—ç¬¦ä¸²
     /// </summary>
     public string Serialize<T>(T obj)
     {
@@ -145,7 +145,7 @@ public sealed class ConfigManager
     }
 
     /// <summary>
-    /// ½«JSON×Ö·û´®·´ĞòÁĞ»¯Îª¶ÔÏó
+    /// å°†JSONå­—ç¬¦ä¸²ååºåˆ—åŒ–ä¸ºå¯¹è±¡
     /// </summary>
     public static T Deserialize<T>(string json)
     {
@@ -154,18 +154,18 @@ public sealed class ConfigManager
 
     private string GetConfigFilePath(string configName)
     {
-        // ×ª»»Ò»ÏÂÎÄ¼şÃû³Æ
+        // è½¬æ¢ä¸€ä¸‹æ–‡ä»¶åç§°
         var safeName = string.Join("_", configName.Split(Path.GetInvalidFileNameChars()));
         return Path.Combine(_path, $"{safeName}.json");
     }
 
     /// <summary>
-    /// ¼ì²éÁ½¸ö¶ÔÏóÊÇ·ñÓĞ²îÒì
+    /// æ£€æŸ¥ä¸¤ä¸ªå¯¹è±¡æ˜¯å¦æœ‰å·®å¼‚
     /// </summary>
-    /// <typeparam name="T">¶ÔÏóÀàĞÍ</typeparam>
-    /// <param name="original">Ô­Ê¼¶ÔÏó</param>
-    /// <param name="modified">ĞŞ¸ÄºóµÄ¶ÔÏó</param>
-    /// <returns>ÊÇ·ñÓĞ²îÒì</returns>
+    /// <typeparam name="T">å¯¹è±¡ç±»å‹</typeparam>
+    /// <param name="original">åŸå§‹å¯¹è±¡</param>
+    /// <param name="modified">ä¿®æ”¹åçš„å¯¹è±¡</param>
+    /// <returns>æ˜¯å¦æœ‰å·®å¼‚</returns>
     public bool HasChanges<T>(T original, T modified)
     {
         if (ReferenceEquals(original, null) || ReferenceEquals(modified, null))

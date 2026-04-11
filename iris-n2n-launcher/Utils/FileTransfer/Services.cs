@@ -45,7 +45,7 @@ public sealed class FileTransferService : IDisposable
         {
             if (!File.Exists(path))
             {
-                OnSendFailure?.Invoke(this, new FileTransferEventArgs(path, "ÕÒ²»µ½Õâ¸öÎÄ¼ş..."));
+                OnSendFailure?.Invoke(this, new FileTransferEventArgs(path, "æ‰¾ä¸åˆ°è¿™ä¸ªæ–‡ä»¶..."));
                 continue;
             }
 
@@ -90,13 +90,14 @@ public sealed class FileTransferService : IDisposable
     {
         using var dialog = new FolderBrowserDialog
         {
-            Description = $"½ÓÊÕÎÄ¼ş£º{fileName} ({FormatFileSize(size)})£¬ÇëÑ¡Ôñ±£´æÂ·¾¶£º"
+            Description = $"æ¥æ”¶æ–‡ä»¶ï¼š{fileName} ({FormatFileSize(size)})ï¼Œè¯·é€‰æ‹©ä¿å­˜è·¯å¾„ï¼š"
         };
 
 
         if (dialog.ShowDialog() == DialogResult.OK)
         {
-            return Path.Combine(dialog.SelectedPath, fileName);
+            var safeFileName = SanitizeIncomingFileName(fileName);
+            return Path.Combine(dialog.SelectedPath, safeFileName);
         }
 
         return null;
@@ -125,42 +126,42 @@ public sealed class FileTransferService : IDisposable
                 e.SavePath = "";
         };
 
-        notifyIcon = new NotifyIcon
+                notifyIcon = new NotifyIcon
         {
             Visible = true,
-            BalloonTipTitle = "ÎÄ¼ş´«ÊäÍ¨Öª",
+            BalloonTipTitle = "æ–‡ä»¶ä¼ è¾“é€šçŸ¥",
             BalloonTipIcon = ToolTipIcon.Info
         };
 
-        // ÅäÖÃÊÂ¼ş´¦Àí
+        // é…ç½®äº‹ä»¶å¤„ç†
         OnReceiveSuccess += (sender, e) =>
         {
-            ShowBalloon($"½ÓÊÕ³É¹¦£º{e.FilePath}", e.Message, ToolTipIcon.Info);
+            ShowBalloon($"æ¥æ”¶æˆåŠŸï¼š{e.FilePath}", e.Message, ToolTipIcon.Info);
         };
 
         OnReceiveFailure += (sender, e) =>
         {
-            ShowBalloon($"½ÓÊÕÊ§°Ü£º{e.FilePath}", e.Message, ToolTipIcon.Error);
+            ShowBalloon($"æ¥æ”¶å¤±è´¥ï¼š{e.FilePath}", e.Message, ToolTipIcon.Error);
         };
 
         OnReceiveCancelled += (sender, e) =>
         {
-            ShowBalloon($"½ÓÊÕÈ¡Ïû£º{e.FilePath}", e.Message, ToolTipIcon.Warning);
+            ShowBalloon($"æ¥æ”¶å–æ¶ˆï¼š{e.FilePath}", e.Message, ToolTipIcon.Warning);
         };
 
         OnSendSuccess += (sender, e) =>
         {
-            ShowBalloon($"·¢ËÍ³É¹¦£º{e.FilePath}", e.Message, ToolTipIcon.Info);
+            ShowBalloon($"å‘é€æˆåŠŸï¼š{e.FilePath}", e.Message, ToolTipIcon.Info);
         };
 
         OnSendFailure += (sender, e) =>
         {
-            ShowBalloon($"·¢ËÍÊ§°Ü£º{e.FilePath}", e.Message, ToolTipIcon.Error);
+            ShowBalloon($"å‘é€å¤±è´¥ï¼š{e.FilePath}", e.Message, ToolTipIcon.Error);
         };
 
         OnSendCancelled += (sender, e) =>
         {
-            ShowBalloon($"·¢ËÍÈ¡Ïû£º{e.FilePath}", e.Message, ToolTipIcon.Warning);
+            ShowBalloon($"å‘é€å–æ¶ˆï¼š{e.FilePath}", e.Message, ToolTipIcon.Warning);
         };
     }
     private void ShowBalloon(string title, string message, ToolTipIcon icon)
@@ -168,7 +169,7 @@ public sealed class FileTransferService : IDisposable
         notifyIcon.BalloonTipTitle = title;
         notifyIcon.BalloonTipText = message;
         notifyIcon.BalloonTipIcon = icon;
-        notifyIcon.ShowBalloonTip(3000); // ÏÔÊ¾3Ãëºó×Ô¶¯ÏûÊ§
+        notifyIcon.ShowBalloonTip(3000); // æ˜¾ç¤º3ç§’åè‡ªåŠ¨æ¶ˆå¤±
     }
 
     public List<FileTransferTask> GetTaskQueue() =>
@@ -208,12 +209,12 @@ public sealed class FileTransferService : IDisposable
                 UpdateTaskProgress(task, totalRead, sw.Elapsed);
             }
 
-            OnSendSuccess?.Invoke(this, new FileTransferEventArgs(filePath, "·¢ËÍÍê³É"));
+            OnSendSuccess?.Invoke(this, new FileTransferEventArgs(filePath, "å‘é€å®Œæˆ"));
             task.Status = TransferStatus.Completed;
         }
         catch (OperationCanceledException)
         {
-            OnSendCancelled?.Invoke(this, new FileTransferEventArgs(filePath, "´«ÊäÈ¡Ïû"));
+            OnSendCancelled?.Invoke(this, new FileTransferEventArgs(filePath, "ä¼ è¾“å–æ¶ˆ"));
             task.Status = TransferStatus.Canceled;
         }
         catch (Exception ex)
@@ -294,7 +295,7 @@ public sealed class FileTransferService : IDisposable
                     }
                     catch (OperationCanceledException)
                     {
-                        // Õı³£Í£Ö¹
+                         // æ­£å¸¸åœæ­¢
                         break;
                     }
                     catch { }
@@ -359,9 +360,13 @@ public sealed class FileTransferService : IDisposable
                 return;
             }
 
+            string? safeSavePath = null;
             try
             {
-                using var fileStream = File.Create(args.SavePath);
+                safeSavePath = GetValidatedSavePath(args.SavePath, fileName);
+                task.FileName = Path.GetFileName(safeSavePath);
+
+                using var fileStream = File.Create(safeSavePath);
                 var sw = Stopwatch.StartNew();
                 long totalRead = 0;
                 var buffer = new byte[8192];
@@ -374,12 +379,12 @@ public sealed class FileTransferService : IDisposable
                     UpdateTaskProgress(task, totalRead, sw.Elapsed);
                 }
 
-                OnReceiveSuccess?.Invoke(this, new FileTransferEventArgs(args.SavePath, "½ÓÊÕÍê³É"));
+                OnReceiveSuccess?.Invoke(this, new FileTransferEventArgs(args.SavePath, "æ¥æ”¶å®Œæˆ"));
                 task.Status = TransferStatus.Completed;
             }
             catch (OperationCanceledException)
             {
-                OnReceiveCancelled?.Invoke(this, new FileTransferEventArgs(args.SavePath, "´«ÊäÈ¡Ïû"));
+                OnReceiveCancelled?.Invoke(this, new FileTransferEventArgs(args.SavePath, "ä¼ è¾“å–æ¶ˆ"));
                 task.Status = TransferStatus.Canceled;
             }
             catch (Exception ex)
@@ -417,6 +422,56 @@ public sealed class FileTransferService : IDisposable
     private async Task SendCancellationSignalAsync(NetworkStream stream)
     {
         await stream.WriteAsync([0], 0, 1);
+    }
+
+    private static string SanitizeIncomingFileName(string fileName)
+    {
+        var sanitized = Path.GetFileName(fileName);
+        if (string.IsNullOrWhiteSpace(sanitized))
+        {
+            throw new InvalidDataException("æ¥æ”¶çš„æ–‡ä»¶åæ— æ•ˆã€‚");
+        }
+
+        if (sanitized.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
+        {
+            throw new InvalidDataException("æ¥æ”¶çš„æ–‡ä»¶ååŒ…å«éæ³•å­—ç¬¦ã€‚");
+        }
+
+        var reservedNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "CON", "PRN", "AUX", "NUL",
+            "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
+            "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"
+        };
+
+        var nameWithoutExtension = Path.GetFileNameWithoutExtension(sanitized);
+        if (reservedNames.Contains(nameWithoutExtension))
+        {
+            throw new InvalidDataException("æ¥æ”¶çš„æ–‡ä»¶åå±äºç³»ç»Ÿä¿ç•™åç§°ã€‚");
+        }
+
+        return sanitized;
+    }
+
+    private static string GetValidatedSavePath(string savePath, string incomingFileName)
+    {
+        var directory = Path.GetDirectoryName(savePath);
+        if (string.IsNullOrWhiteSpace(directory))
+        {
+            throw new InvalidDataException("ä¿å­˜ç›®å½•æ— æ•ˆã€‚");
+        }
+
+        var fullDirectoryPath = Path.GetFullPath(directory);
+        var safeFileName = SanitizeIncomingFileName(incomingFileName);
+        var candidatePath = Path.GetFullPath(Path.Combine(fullDirectoryPath, safeFileName));
+
+        if (!candidatePath.StartsWith(fullDirectoryPath + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)
+            && !string.Equals(candidatePath, Path.Combine(fullDirectoryPath, safeFileName), StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidDataException("æ£€æµ‹åˆ°éæ³•ä¿å­˜è·¯å¾„ã€‚");
+        }
+
+        return candidatePath;
     }
 
     private async Task SafeExecuteTaskAsync(Func<Task> taskFunc, string taskId, bool isReceiveTask)

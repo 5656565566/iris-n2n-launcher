@@ -2,8 +2,14 @@
 using System.Diagnostics;
 using System.Text;
 
-
 namespace iris_n2n_launcher.Utils;
+
+public sealed class ProcessOutputHandlers
+{
+    public Action<string>? OnOutput { get; init; }
+    public Action<string>? OnError { get; init; }
+    public Action<Process>? OnExit { get; init; }
+}
 
 /// <summary>
 /// 进程执行帮助类，提供进程执行和管理功能
@@ -31,7 +37,7 @@ public sealed class ExeHelper : IDisposable
     /// <param name="arguments">需要传递的参数</param>
     /// <param name="workDirPath">工作目录</param>
     /// <returns>创建的进程</returns>
-    public Process CreateProcess(string command, string arguments, string workDirPath = "", bool useOutputHandlers = true, Encoding? encoding = null)
+    public Process CreateProcess(string command, string arguments, string workDirPath = "", bool useOutputHandlers = true, Encoding? encoding = null, ProcessOutputHandlers? handlers = null)
     {
         LogHelper logHelper = LogHelper.Instance;
 
@@ -51,7 +57,11 @@ public sealed class ExeHelper : IDisposable
             processInfo.WorkingDirectory = workDirPath;
         }
 
-        var process = new Process { StartInfo = processInfo };
+        var process = new Process
+        {
+            StartInfo = processInfo,
+            EnableRaisingEvents = true
+        };
 
         if (useOutputHandlers)
         {
@@ -60,6 +70,7 @@ public sealed class ExeHelper : IDisposable
                 if (!string.IsNullOrEmpty(e.Data))
                 {
                     logHelper.Info(e.Data);
+                    handlers?.OnOutput?.Invoke(e.Data);
                 }
             };
 
@@ -68,6 +79,7 @@ public sealed class ExeHelper : IDisposable
                 if (!string.IsNullOrEmpty(e.Data))
                 {
                     logHelper.Error(e.Data);
+                    handlers?.OnError?.Invoke(e.Data);
                 }
             };
         }
@@ -84,6 +96,7 @@ public sealed class ExeHelper : IDisposable
         process.Exited += (sender, e) =>
         {
             _runningProcesses.TryRemove(process.Id, out _);
+            handlers?.OnExit?.Invoke(process);
             // logHelper.Warn($"Process {process.Id} has exited with code {process.ExitCode}");
         };
 
