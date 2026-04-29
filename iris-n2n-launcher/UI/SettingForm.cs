@@ -943,12 +943,12 @@ public partial class SettingForm : Form
         }
     }
 
-    private void TcpUdpForwCheckBox_Click(object sender, EventArgs e)
+    private async void TcpUdpForwCheckBox_Click(object sender, EventArgs e)
     {
         config.TcpUdpForw = TcpUdpForwCheckBox.Checked;
         if (config.TcpUdpForw)
         {
-            tcpUdpForw.Start();
+            await tcpUdpForw.StartAsync();
         }
         else
         {

@@ -184,7 +184,7 @@ public partial class MainForm : Form
         base.WndProc(ref m);
     }
 
-    private void SwitchButton_Click(object? sender, EventArgs e)
+    private async void SwitchButton_Click(object? sender, EventArgs e)
     {
 
         if (RoomTextBox.Text == "")
@@ -208,10 +208,10 @@ public partial class MainForm : Form
             FirewallOperateByObject(false, false, false);
         }
 
-        AddEdge(n2NConfiguration);
+        await AddEdgeAsync(n2NConfiguration);
     }
 
-    private async void AddEdge(N2NConfiguration n2NConfiguration)
+    private async Task AddEdgeAsync(N2NConfiguration n2NConfiguration)
     {
         SwitchButton.Text = "启动中...";
         SwitchButton.Enabled = false;
@@ -344,7 +344,7 @@ public partial class MainForm : Form
         exitN2N = true;
     }
 
-    private void SettingButton_Click(object sender, EventArgs e)
+    private async void SettingButton_Click(object sender, EventArgs e)
     {
         SettingForm settingFrom = new();
         settingFrom.ShowDialog();
@@ -359,7 +359,7 @@ public partial class MainForm : Form
                 string configMame = configManager.LoadConfig<Configuration>("config").ConfigName;
                 N2NConfiguration n2NConfiguration = configManager.LoadConfig<N2NConfiguration>(configMame);
 
-                AddEdge(n2NConfiguration);
+                await AddEdgeAsync(n2NConfiguration);
             }
         }
     }
@@ -381,7 +381,7 @@ public partial class MainForm : Form
         RoomTextBox.Text = n2NConfiguration.Community;
     }
 
-    private void UrlJoinbutton_Click(object sender, EventArgs e)
+    private async void UrlJoinbutton_Click(object sender, EventArgs e)
     {
         string configMame = configManager.LoadConfig<Configuration>("config").ConfigName;
         N2NConfiguration n2NConfiguration = configManager.LoadConfig<N2NConfiguration>(configMame);
@@ -392,10 +392,10 @@ public partial class MainForm : Form
         {
             n2NConfiguration.SuperNodeHostAndPort = superNodeHostAndPort!;
             n2NConfiguration.Community = community!;
-            UrlJoin(n2NConfiguration);
+            await UrlJoin(n2NConfiguration);
         }
     }
-    public void UrlJoin(N2NConfiguration n2NConfiguration)
+    public async Task UrlJoin(N2NConfiguration n2NConfiguration)
     {
         if (StopButton.Enabled)
         {
@@ -406,7 +406,7 @@ public partial class MainForm : Form
         RoomTextBox.Text = n2NConfiguration.Community;
         RoomTextBox.TextChanged += RoomTextBox_TextChanged;
 
-        AddEdge(n2NConfiguration);
+        await AddEdgeAsync(n2NConfiguration);
     }
     private void ToolButtom_Click(object sender, EventArgs e)
     {

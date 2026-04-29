@@ -37,7 +37,7 @@ internal sealed class TcpUdpForw
         return (_process != null);
     }
 
-    public async void Start()
+    public async Task StartAsync()
     {
         await FirewallManager.AllowProgramAsync("n2n-tcpudp-forw", EXE);
 
@@ -157,7 +157,7 @@ internal sealed class TcpUdpForw
     {
         if (_process == null || _process.HasExited || _client == null)
         {
-            throw new InvalidOperationException("Service is not running. Call Start() first.");
+            throw new InvalidOperationException("Service is not running. Call StartAsync() first.");
         }
     }
 

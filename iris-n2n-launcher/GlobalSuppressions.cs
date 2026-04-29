@@ -17,7 +17,5 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage("Usage", "VSTHRD100:Avoid async void methods", Justification = "<挂起>", Scope = "member", Target = "~M:iris_n2n_launcher.UI.ToolForm.TcpUdpForwReButton_Click(System.Object,System.EventArgs)")]
 [assembly: SuppressMessage("Usage", "VSTHRD100:Avoid async void methods", Justification = "<挂起>", Scope = "member", Target = "~M:iris_n2n_launcher.UI.ToolForm.TcpUdpForwAddButton_Click(System.Object,System.EventArgs)")]
 [assembly: SuppressMessage("Usage", "VSTHRD100:Avoid async void methods", Justification = "<挂起>", Scope = "member", Target = "~M:iris_n2n_launcher.UI.ToolForm.TcpUdpForwDelButton_Click(System.Object,System.EventArgs)")]
-[assembly: SuppressMessage("Usage", "VSTHRD100:Avoid async void methods", Justification = "<挂起>", Scope = "member", Target = "~M:iris_n2n_launcher.Utils.TcpUdpForw.Start")]
-[assembly: SuppressMessage("Usage", "VSTHRD100:Avoid async void methods", Justification = "<挂起>", Scope = "member", Target = "~M:iris_n2n_launcher.UI.MainForm.AddEdge(iris_n2n_launcher.N2N.N2NConfiguration)")]
 [assembly: SuppressMessage("Usage", "VSTHRD100:Avoid async void methods", Justification = "<挂起>", Scope = "member", Target = "~M:iris_n2n_launcher.UI.MultipleEdgeForm.AddNodeButton_Click(System.Object,System.EventArgs)")]
 [assembly: SuppressMessage("Performance", "SYSLIB1045:转换为“GeneratedRegexAttribute”。", Justification = "<挂起>", Scope = "member", Target = "~F:iris_n2n_launcher.N2N.EdgeNodeManage._logRules")]

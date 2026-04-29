@@ -173,7 +173,7 @@ internal static class Program
 
             if (config.TcpUdpForw)
             {
-                tcpUdpForw.Start();
+                _ = tcpUdpForw.StartAsync();
             }
             else
             {
@@ -282,9 +282,16 @@ internal static class Program
             n2nconfig.SuperNodeHostAndPort = share[0];
             n2nconfig.Community = share[1];
 
-            mainForm?.Invoke((MethodInvoker)delegate
+            mainForm?.Invoke((MethodInvoker)async delegate
             {
-                mainForm.UrlJoin(n2nconfig);
+                try
+                {
+                    await mainForm.UrlJoin(n2nconfig);
+                }
+                catch (Exception ex)
+                {
+                    LogException(ex);
+                }
             });
         }
     }
