@@ -121,14 +121,35 @@ public sealed class MinecraftLanProxy : IDisposable
 
     private void InitializeNetworkComponents()
     {
-        _listener = new UdpClient(_port);
-        _listener.Client.SetSocketOption(
-            SocketOptionLevel.Socket,
-            SocketOptionName.ReuseAddress,
-            true);
-        _listener.JoinMulticastGroup(IPAddress.Parse("224.0.2.60"));
+        Socket? listenerSocket = null;
+        UdpClient? listener = null;
+        UdpClient? broadcaster = null;
 
-        _broadcaster = new UdpClient { EnableBroadcast = true };
+        try
+        {
+            listenerSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp)
+            {
+                ExclusiveAddressUse = false
+            };
+            listenerSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+            listenerSocket.Bind(new IPEndPoint(IPAddress.Any, _port));
+
+            listener = new UdpClient { Client = listenerSocket };
+            listenerSocket = null;
+            listener.JoinMulticastGroup(IPAddress.Parse("224.0.2.60"));
+
+            broadcaster = new UdpClient { EnableBroadcast = true };
+
+            _listener = listener;
+            _broadcaster = broadcaster;
+        }
+        catch
+        {
+            listener?.Dispose();
+            listenerSocket?.Dispose();
+            broadcaster?.Dispose();
+            throw;
+        }
     }
 
     private void CleanupNetworkComponents()

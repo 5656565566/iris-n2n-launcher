@@ -162,6 +162,7 @@ public class EdgeNodeManage : IDisposable
     private readonly CancellationTokenSource _monitorCts = new();
     private readonly TapNetworkManager TapNetworkManager = new();
     private readonly ConfigManager config = ConfigManager.Instance;
+    private readonly SemaphoreSlim _nodeLifecycleLock = new(1, 1);
     public readonly List<string> usedAdapters = [];
     private static EdgeNodeManage? _instance;
     private static readonly object _lock = new();
@@ -205,6 +206,7 @@ public class EdgeNodeManage : IDisposable
     /// <returns>是否启动成功</returns>
     public async Task<NodeStartResult> StartNodeAsync(string id, N2NConfiguration parameters)
     {
+        await _nodeLifecycleLock.WaitAsync();
         try
         {
             await TapNetworkManager.EnsureTapAdapterExistsAsync();
@@ -293,7 +295,7 @@ public class EdgeNodeManage : IDisposable
                     else
                     {
                         // 发生了 TapError，停止节点，准备下一次重试
-                        StopNode(id);
+                        await StopNodeCoreAsync(id, true);
                     }
                 }
                 else
@@ -310,6 +312,10 @@ public class EdgeNodeManage : IDisposable
         catch (Exception ex)
         {
             return NodeStartResult.Fail(NodeStartError.UnexpectedException, ex.Message);
+        }
+        finally
+        {
+            _nodeLifecycleLock.Release();
         }
     }
 
@@ -436,32 +442,107 @@ public class EdgeNodeManage : IDisposable
     /// </summary>
     public bool StopNode(string id)
     {
-        if (_activeNodes.TryRemove(id, out var nodeInfo))
+        _nodeLifecycleLock.Wait();
+        try
         {
+            return StopNodeCoreAsync(id, false).GetAwaiter().GetResult();
+        }
+        finally
+        {
+            _nodeLifecycleLock.Release();
+        }
+    }
+
+    /// <summary>
+    /// 停止指定节点，并等待进程完全退出
+    /// </summary>
+    public async Task<bool> StopNodeAsync(string id)
+    {
+        await _nodeLifecycleLock.WaitAsync();
+        try
+        {
+            return await StopNodeCoreAsync(id, true);
+        }
+        finally
+        {
+            _nodeLifecycleLock.Release();
+        }
+    }
+
+    private async Task<bool> StopNodeCoreAsync(string id, bool waitForExit)
+    {
+        if (!_activeNodes.TryGetValue(id, out var nodeInfo))
+        {
+            return false;
+        }
+
+        try
+        {
+            nodeInfo.UdpManager.Dispose();
+
+            if (!nodeInfo.Process.HasExited)
+            {
+                nodeInfo.Process.Kill();
+            }
+
+            if (waitForExit)
+            {
+                await nodeInfo.Process.WaitForExitAsync();
+            }
+
+            if (nodeInfo.Process.HasExited)
+            {
+                MarkNodeExited(nodeInfo);
+            }
+
+            _activeNodes.TryRemove(id, out _);
+            usedAdapters.Remove(nodeInfo.Parameters.DeviceName);
 
             if (_activeNodes.IsEmpty)
             {
-                if (_broadcastRepair != null)
-                {
-                    _broadcastRepair.Kill();
-                    _broadcastRepair = null;
-                }
+                await StopBroadcastRepairAsync(waitForExit);
             }
 
-            try
+            return true;
+        }
+        catch
+        {
+            if (nodeInfo.Process.HasExited)
             {
+                _activeNodes.TryRemove(id, out _);
                 usedAdapters.Remove(nodeInfo.Parameters.DeviceName);
-                nodeInfo.UdpManager.Dispose();
-                nodeInfo.Process.Kill();
-                return true;
             }
-            catch
-            {
-                return false;
-            }
+
+            return false;
+        }
+    }
+
+    private async Task StopBroadcastRepairAsync(bool waitForExit)
+    {
+        var broadcastRepair = _broadcastRepair;
+        if (broadcastRepair == null)
+        {
+            return;
         }
 
-        return false;
+        _broadcastRepair = null;
+
+        try
+        {
+            if (!broadcastRepair.HasExited)
+            {
+                broadcastRepair.Kill();
+            }
+
+            if (waitForExit)
+            {
+                await broadcastRepair.WaitForExitAsync();
+            }
+        }
+        catch
+        {
+            
+        }
     }
 
     /// <summary>
@@ -727,6 +808,7 @@ public class EdgeNodeManage : IDisposable
         }
         _activeNodes.Clear();
         _monitorCts.Dispose();
+        _nodeLifecycleLock.Dispose();
 
         GC.SuppressFinalize(this);
     }

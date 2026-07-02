@@ -13,6 +13,7 @@ public partial class SettingForm : Form
 
     private static readonly ConfigManager configManager = ConfigManager.Instance;
     private static Configuration config;
+    private static Configuration _originalConfig;
     private static N2NConfiguration _originalN2Nconfig;
     private static string _originalConfigName;
     private static N2NConfiguration N2Nconfig;
@@ -23,6 +24,9 @@ public partial class SettingForm : Form
     private static readonly TcpUdpForw tcpUdpForw = TcpUdpForw.Instance;
     private static string[] version = ["0", "0", "0", "0"];
     private static int configurationChangeStatus = 0;
+    private const int NoConfigurationChange = 0;
+    private const int CoreRestartRequired = 1;
+    private const int RuntimeConfigurationChanged = 2;
 
     public void BindEvents()
     {
@@ -243,8 +247,9 @@ public partial class SettingForm : Form
 
         ConfigListBox.SelectedIndexChanged += ConfigListBox_SelectedIndexChanged;
 
-        configurationChangeStatus = 0;
+        configurationChangeStatus = NoConfigurationChange;
 
+        _originalConfig = configManager.LoadConfig<Configuration>("config");
         _originalN2Nconfig = configManager.LoadConfig<N2NConfiguration>(config.ConfigName);
         _originalConfigName = config.ConfigName;
     }
@@ -433,11 +438,34 @@ public partial class SettingForm : Form
     {
         WriteConfig();
 
-        if (configManager.HasChanges<N2NConfiguration>(_originalN2Nconfig, N2Nconfig))
+        Configuration currentConfig = configManager.LoadConfig<Configuration>("config");
+        N2NConfiguration currentN2NConfig = configManager.LoadConfig<N2NConfiguration>(currentConfig.ConfigName);
+
+        if (_originalConfigName != currentConfig.ConfigName ||
+            configManager.HasChanges<N2NConfiguration>(_originalN2Nconfig, currentN2NConfig) ||
+            HasCoreRuntimeConfigChanges(_originalConfig, currentConfig))
         {
-            configurationChangeStatus = 1;
+            configurationChangeStatus = CoreRestartRequired;
+        }
+        else if (HasConfigurationChanges(_originalConfig, currentConfig))
+        {
+            configurationChangeStatus = RuntimeConfigurationChanged;
+        }
+        else
+        {
+            configurationChangeStatus = NoConfigurationChange;
         }
 
+    }
+
+    private static bool HasCoreRuntimeConfigChanges(Configuration original, Configuration current)
+    {
+        return original.BroadcastRepair != current.BroadcastRepair;
+    }
+
+    private static bool HasConfigurationChanges(Configuration original, Configuration current)
+    {
+        return configManager.Serialize(original) != configManager.Serialize(current);
     }
 
     private void SeverListComboBox_TextChanged(object? sender, EventArgs e)
@@ -449,31 +477,39 @@ public partial class SettingForm : Form
     {
         OnlineServerButton.Enabled = false;
 
-        var server = await IrisServerApi.GetServerListAsync();
-
-        if (server == null)
+        try
         {
-            MessageBox.Show("服务器开小差了，稍后再试试吧...");
-            return;
-        }
+            var server = await IrisServerApi.GetServerListAsync();
 
-        if (server.Count > 0)
+            if (server == null)
+            {
+                MessageBox.Show("服务器开小差了，稍后再试试吧...");
+                return;
+            }
+
+            if (server.Count > 0)
+            {
+                config.OnlineServerList.Clear();
+            }
+
+            foreach (var item in server)
+            {
+                if (item.Port == 7654) { config.OnlineServerList.Add(item.Server!); }
+                else { config.OnlineServerList.Add($"{item.Server}:{item.Port}"); }
+            }
+
+            configManager.SaveConfig("config", config);
+            UpdataServerList();
+
+            MessageBox.Show("更新完成");
+        }
+        finally
         {
-            config.OnlineServerList.Clear();
+            if (!IsDisposed && !Disposing)
+            {
+                OnlineServerButton.Enabled = true;
+            }
         }
-
-        foreach (var item in server)
-        {
-            if (item.Port == 7654) { config.OnlineServerList.Add(item.Server!); }
-            else { config.OnlineServerList.Add($"{item.Server}:{item.Port}"); }
-        }
-
-        configManager.SaveConfig("config", config);
-        UpdataServerList();
-
-        MessageBox.Show("更新完成");
-
-        OnlineServerButton.Enabled = true;
     }
 
     private void AddServerButton_Click(object sender, EventArgs e)
@@ -521,48 +557,53 @@ public partial class SettingForm : Form
     {
         ServerSpeedTestButton.Enabled = false;
 
-        MessageBox.Show("点击确定，开始测试服务器，这可能需要一点时间...");
-
-        List<string> combinedList = [.. config.OnlineServerList, .. config.UserServerList];
-
-        foreach (string combined in combinedList)
+        try
         {
+            MessageBox.Show("点击确定，开始测试服务器，这可能需要一点时间...");
 
-            string _combined = combined;
-            int _port = 7654;
+            List<string> combinedList = [.. config.OnlineServerList, .. config.UserServerList];
 
-            if (combined.Contains(':'))
+            foreach (string combined in combinedList)
             {
-                _combined = combined.Split(':')[0];
-                try
-                {
-                    _port = int.Parse(_combined.Split(':')[1]);
-                }
-                catch
-                {
 
+                string _combined = combined;
+                int _port = 7654;
+                string[] serverParts = combined.Split(':');
+
+                if (serverParts.Length == 2)
+                {
+                    _combined = serverParts[0];
+                    if (!int.TryParse(serverParts[1], out _port))
+                    {
+                        _port = 7654;
+                    }
                 }
+
+                var replies = await NetworkTool.PingHostAsync(_combined);
+                int average = replies.Count != 0 ? (int)replies.Average() : 999;
+
+                if (average == 999 || average == 0)
+                {
+                    (bool stauts, average) = await NetworkTool.CheckN2Nv3ServerUdpAsync(_combined, _port);
+
+                    if (!stauts)
+                    {
+                        average = 999;
+                    }
+                }
+
+                serverPing[combined] = average;
             }
 
-            var replies = await NetworkTool.PingHostAsync(_combined);
-            int average = replies.Count != 0 ? (int)replies.Average() : 999;
-
-            if (average == 999 || average == 0)
-            {
-                (bool stauts, average) = await NetworkTool.CheckN2Nv3ServerUdpAsync(combined, _port);
-
-                if (!stauts)
-                {
-                    average = 999;
-                }
-            }
-
-            serverPing[combined] = average;
+            SeverListComboBox_SelectedIndexChanged(sender, EventArgs.Empty);
         }
-
-        ServerSpeedTestButton.Enabled = true;
-
-        SeverListComboBox_SelectedIndexChanged(sender, EventArgs.Empty);
+        finally
+        {
+            if (!IsDisposed && !Disposing)
+            {
+                ServerSpeedTestButton.Enabled = true;
+            }
+        }
     }
 
     private void SeverListComboBox_SelectedIndexChanged(object sender, EventArgs e)
@@ -908,11 +949,11 @@ public partial class SettingForm : Form
 
         if (config.ConfigName != _originalConfigName)
         {
-            configurationChangeStatus = 1;
+            configurationChangeStatus = CoreRestartRequired;
         }
         else
         {
-            configurationChangeStatus = 0;
+            configurationChangeStatus = NoConfigurationChange;
         }
 
         configManager.SaveConfig("config", config);

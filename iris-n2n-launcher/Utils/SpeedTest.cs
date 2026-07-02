@@ -166,7 +166,7 @@ namespace iris_n2n_launcher.Utils
         /// <summary>
         /// 执行 UDP 稳定性测试
         /// </summary>
-        public static async Task<NetworkQualityResult> RunUdpTestAsync(string host, int port, int count = DefaultTestCount)
+        public static async Task<NetworkQualityResult> RunUdpTestAsync(string host, int port, int count = DefaultTestCount, CancellationToken cancellationToken = default)
         {
             var result = new NetworkQualityResult { Protocol = "UDP", PacketsSent = count };
             var latencies = new List<double>();
@@ -177,7 +177,8 @@ namespace iris_n2n_launcher.Utils
             {
                 try
                 {
-                    var addresses = await Dns.GetHostAddressesAsync(host);
+                    cancellationToken.ThrowIfCancellationRequested();
+                    var addresses = await Dns.GetHostAddressesAsync(host, cancellationToken);
                     var targetEp = new IPEndPoint(addresses.FirstOrDefault(a => a.AddressFamily == AddressFamily.InterNetwork) ?? addresses.First(), port);
 
                     client.Client.ReceiveTimeout = RecvTimeoutMs;
@@ -185,6 +186,7 @@ namespace iris_n2n_launcher.Utils
 
                     for (int i = 0; i < count; i++)
                     {
+                        cancellationToken.ThrowIfCancellationRequested();
                         var stopwatch = Stopwatch.StartNew();
                         try
                         {
@@ -206,13 +208,21 @@ namespace iris_n2n_launcher.Utils
                                 }
                             }
                         }
+                        catch (OperationCanceledException)
+                        {
+                            throw;
+                        }
                         catch { }
 
-                        await Task.Delay(PacketIntervalMs);
+                        await Task.Delay(PacketIntervalMs, cancellationToken);
                     }
 
                     CalculateMetrics(result, latencies);
                     result.IsSuccess = true;
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
                 }
                 catch (Exception ex)
                 {
@@ -227,7 +237,7 @@ namespace iris_n2n_launcher.Utils
         /// <summary>
         /// 执行 TCP 稳定性测试
         /// </summary>
-        public static async Task<NetworkQualityResult> RunTcpTestAsync(string host, int port, int count = 10)
+        public static async Task<NetworkQualityResult> RunTcpTestAsync(string host, int port, int count = 10, CancellationToken cancellationToken = default)
         {
             var result = new NetworkQualityResult { Protocol = "TCP", PacketsSent = count };
             var latencies = new List<double>();
@@ -237,8 +247,13 @@ namespace iris_n2n_launcher.Utils
             IPAddress ip;
             try
             {
-                var addresses = await Dns.GetHostAddressesAsync(host);
+                cancellationToken.ThrowIfCancellationRequested();
+                var addresses = await Dns.GetHostAddressesAsync(host, cancellationToken);
                 ip = addresses.FirstOrDefault(a => a.AddressFamily == AddressFamily.InterNetwork) ?? addresses.First();
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
             }
             catch (Exception ex)
             {
@@ -253,8 +268,9 @@ namespace iris_n2n_launcher.Utils
                 {
                     // 设置连接超时
                     var connectTask = client.ConnectAsync(ip, port);
-                    if (await Task.WhenAny(connectTask, Task.Delay(2000)) != connectTask)
+                    if (await Task.WhenAny(connectTask, Task.Delay(2000, cancellationToken)) != connectTask)
                     {
+                        cancellationToken.ThrowIfCancellationRequested();
                         throw new SocketException((int)SocketError.TimedOut);
                     }
                     await connectTask; // 确保异常被抛出
@@ -267,15 +283,16 @@ namespace iris_n2n_launcher.Utils
 
                     for (int i = 0; i < count; i++)
                     {
+                        cancellationToken.ThrowIfCancellationRequested();
                         var sw = Stopwatch.StartNew();
                         try
                         {
-                            await stream.WriteAsync(payload);
+                            await stream.WriteAsync(payload, cancellationToken);
 
                             int totalRead = 0;
                             while (totalRead < PayloadSize)
                             {
-                                int read = await stream.ReadAsync(buffer, totalRead, PayloadSize - totalRead);
+                                int read = await stream.ReadAsync(buffer, totalRead, PayloadSize - totalRead, cancellationToken);
                                 if (read == 0) break;
                                 totalRead += read;
                             }
@@ -288,14 +305,22 @@ namespace iris_n2n_launcher.Utils
                                 result.PacketsReceived++;
                             }
                         }
+                        catch (OperationCanceledException)
+                        {
+                            throw;
+                        }
                         catch { break; }
 
-                        await Task.Delay(PacketIntervalMs);
+                        await Task.Delay(PacketIntervalMs, cancellationToken);
                     }
                 }
 
                 CalculateMetrics(result, latencies);
                 result.IsSuccess = true;
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
             }
             catch (Exception ex)
             {

@@ -70,7 +70,7 @@ public partial class MainForm : Form
     }
 
 
-    private void ProcessSharingLink(string link)
+    private async Task ProcessSharingLinkAsync(string link)
     {
 
         string pattern = @"iris:\/\/[^\s]+";
@@ -83,13 +83,19 @@ public partial class MainForm : Form
             string irisLink = match.Value;
             string[] share = ShareForm.ReadUrl(irisLink.Replace("iris://", "")).Split('#');
 
+            if (share.Length < 2)
+            {
+                MessageBox.Show("分享链接格式无效");
+                return;
+            }
+
             var config = configManager.LoadConfig<Configuration>("config");
             var n2nconfig = configManager.LoadConfig<N2NConfiguration>(config.ConfigName);
 
             n2nconfig.SuperNodeHostAndPort = share[0];
             n2nconfig.Community = share[1];
 
-            UrlJoin(n2nconfig);
+            await UrlJoin(n2nconfig);
         }
     }
     public void ReadConfig()
@@ -136,10 +142,10 @@ public partial class MainForm : Form
         BringToFront();
     }
 
-    private void MainForm_Load(object sender, EventArgs e)
+    private async void MainForm_Load(object sender, EventArgs e)
     {
         if (seletMode == 1) { SwitchButton_Click(null, EventArgs.Empty); Hide();  }
-        if (seletMode == 2) { ProcessSharingLink(share!); }
+        if (seletMode == 2) { await ProcessSharingLinkAsync(share!); }
     }
 
     private void 显示窗口ToolStripMenuItem_Click(object sender, EventArgs e)
@@ -348,30 +354,51 @@ public partial class MainForm : Form
     {
         SettingForm settingFrom = new();
         settingFrom.ShowDialog();
-        if (settingFrom.SettingChanging() == 1) // TODO 处理不同的配置文件变更提示
+        int settingChangeStatus = settingFrom.SettingChanging();
+        if (settingChangeStatus != 0) // TODO 处理不同的配置文件变更提示
         {
             ReadConfig();
 
-            if (StopButton.Enabled)
+            if (settingChangeStatus == 1 && StopButton.Enabled)
             {
-                StopMainEdge();
+                if (!await StopMainEdgeAsync())
+                {
+                    MessageBox.Show("核心关闭失败，设置已保存但未重新启动");
+                    return;
+                }
 
                 string configMame = configManager.LoadConfig<Configuration>("config").ConfigName;
                 N2NConfiguration n2NConfiguration = configManager.LoadConfig<N2NConfiguration>(configMame);
 
                 await AddEdgeAsync(n2NConfiguration);
             }
+            else
+            {
+                ApplyRuntimeConfiguration();
+            }
         }
     }
 
-    private void StopButton_Click(object? sender, EventArgs e)
+    private async void StopButton_Click(object? sender, EventArgs e)
     {
-        StopMainEdge();
+        await StopMainEdgeAsync();
     }
 
     private void StopMainEdge()
     {
         edgeNodeManage.StopNode(nodeName);
+        ResetMainEdgeView();
+    }
+
+    private async Task<bool> StopMainEdgeAsync()
+    {
+        bool stopped = await edgeNodeManage.StopNodeAsync(nodeName);
+        ResetMainEdgeView();
+        return stopped || edgeNodeManage.GetNodeInfo(nodeName) == null;
+    }
+
+    private void ResetMainEdgeView()
+    {
         IPtextBox.Text = "";
         SwitchButton.Text = "一键启动";
         SwitchButton.Enabled = true;
@@ -379,6 +406,32 @@ public partial class MainForm : Form
         string configMame = configManager.LoadConfig<Configuration>("config").ConfigName;
         N2NConfiguration n2NConfiguration = configManager.LoadConfig<N2NConfiguration>(configMame);
         RoomTextBox.Text = n2NConfiguration.Community;
+    }
+
+    private void ApplyRuntimeConfiguration()
+    {
+        Configuration currentConfig = configManager.LoadConfig<Configuration>("config");
+
+        if (!currentConfig.Minecraft)
+        {
+            minecraftLanProxy.Stop();
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(IPtextBox.Text))
+        {
+            return;
+        }
+
+        minecraftLanProxy.SetBroadcastIp(IPtextBox.Text);
+        try
+        {
+            minecraftLanProxy.Start();
+        }
+        catch
+        {
+            minecraftLanProxy.Stop();
+        }
     }
 
     private async void UrlJoinbutton_Click(object sender, EventArgs e)

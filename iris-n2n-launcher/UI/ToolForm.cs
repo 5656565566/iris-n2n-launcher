@@ -3,6 +3,8 @@ using iris_n2n_launcher.Utils;
 using iris_n2n_launcher.Utils.FileTransfer;
 using STUN.Enums;
 using STUN.StunResult;
+using System.Net;
+using System.Net.Sockets;
 using System.Text;
 
 namespace iris_n2n_launcher.UI;
@@ -12,11 +14,18 @@ public partial class ToolForm : Form
     private static readonly EdgeNodeManage edgeNodeManage = EdgeNodeManage.Instance;
     private static readonly TcpUdpForw tcpUdpForw = TcpUdpForw.Instance;
     private static readonly FileTransferService fileTransferService = FileTransferService.Instance;
-    private static readonly BackgroundEventManager eventManager = new();
     private static string localIp = "127.0.0.1";
+    private readonly BackgroundEventManager eventManager = new();
+    private readonly CancellationTokenSource _toolFormCts = new();
+    private readonly CancellationTokenSource _speedTestCts = new();
 
     private void EdgesInfo()
     {
+        if (IsToolFormClosed())
+        {
+            return;
+        }
+
         NetworkTool.SendUdpBroadcast("n2n", 12345); // 广播数据包嗅探其他客户端
 
         var nodesInfo = edgeNodeManage.FetchNodesInfo();
@@ -63,12 +72,22 @@ public partial class ToolForm : Form
             }
         }
 
-        if (RoomInfoGridView.IsHandleCreated && !RoomInfoGridView.IsDisposed)
+        if (!IsToolFormClosed() && RoomInfoGridView.IsHandleCreated && !RoomInfoGridView.IsDisposed)
         {
-            RoomInfoGridView.Invoke(() =>
+            try
             {
-                GridViewHelper.UpdateData(RoomInfoGridView, [.. edgesInfo], columnWeights); // 防止多线程修改问题
-            });
+                RoomInfoGridView.BeginInvoke(new Action(() =>
+                {
+                    if (!IsToolFormClosed())
+                    {
+                        GridViewHelper.UpdateData(RoomInfoGridView, [.. edgesInfo], columnWeights); // 防止多线程修改问题
+                    }
+                }));
+            }
+            catch
+            {
+                Thread.Sleep(10);
+            }
         }
     }
 
@@ -105,13 +124,21 @@ public partial class ToolForm : Form
 
     private void FileTransferInfo()
     {
+        if (IsToolFormClosed())
+        {
+            return;
+        }
+
         if (FileTransferDataGridView.InvokeRequired)
         {
             try
             {
-                FileTransferDataGridView.Invoke(new Action(() =>
+                FileTransferDataGridView.BeginInvoke(new Action(() =>
                 {
-                    FileTransferRe();
+                    if (!IsToolFormClosed())
+                    {
+                        FileTransferRe();
+                    }
                 }));
             }
             catch
@@ -643,8 +670,12 @@ public partial class ToolForm : Form
 
     private void ToolForm_FormClosed(object sender, FormClosedEventArgs e)
     {
+        _toolFormCts.Cancel();
+        _speedTestCts.Cancel();
         eventManager.StopAllEvents();
         eventManager.ClearAllEvents();
+        eventManager.Dispose();
+        _toolFormCts.Dispose();
     }
 
     private void StartEchoButton_Click(object sender, EventArgs e)
@@ -664,44 +695,35 @@ public partial class ToolForm : Form
     {
         SpeedTestButton.Enabled = false;
         SpeedTestRichTextBox.Clear();
+        CancellationToken cancellationToken = _speedTestCts.Token;
 
         try
         {
             string input = EchoServerAddrTextBox.Text.Trim();
 
-            if (string.IsNullOrEmpty(input))
+            if (!TryParseIPv4Endpoint(input, out string host, out int port))
             {
                 AppendText("错误: 请输入服务器地址 (格式 IP:Port)\n", Color.Red);
-                return;
-            }
-
-            int lastColonIndex = input.LastIndexOf(':');
-            if (lastColonIndex == -1 || lastColonIndex == input.Length - 1)
-            {
-                AppendText("错误: 格式不正确，缺少端口号 (例如 127.0.0.1:8080)\n", Color.Red);
-                return;
-            }
-
-            string host = input.Substring(0, lastColonIndex);
-            string portStr = input.Substring(lastColonIndex + 1);
-
-            if (!int.TryParse(portStr, out int port) || port < 1 || port > 65535)
-            {
-                AppendText("错误: 端口号无效 (1-65535)\n", Color.Red);
                 return;
             }
 
             AppendText($">>> 开始测试目标: {host}:{port}\n\n", Color.DarkBlue, true);
 
             AppendText("正在进行 UDP 传输质量测试...\n", Color.Gray);
-            var udpResult = await SpeedTest.RunUdpTestAsync(host, port);
+            var udpResult = await SpeedTest.RunUdpTestAsync(host, port, cancellationToken: cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
             PrintResult(udpResult);
 
             AppendText("正在进行 TCP 连接稳定性测试...\n", Color.Gray);
-            var tcpResult = await SpeedTest.RunTcpTestAsync(host, port);
+            var tcpResult = await SpeedTest.RunTcpTestAsync(host, port, cancellationToken: cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
             PrintResult(tcpResult);
 
             AppendText(">>> 所有测试结束", Color.DarkBlue, true);
+        }
+        catch (OperationCanceledException)
+        {
+            return;
         }
         catch (Exception ex)
         {
@@ -709,12 +731,20 @@ public partial class ToolForm : Form
         }
         finally
         {
-            SpeedTestButton.Enabled = true;
+            if (!IsDisposed && !Disposing)
+            {
+                SpeedTestButton.Enabled = true;
+            }
         }
 
 
         void AppendText(string text, Color color, bool bold = false)
         {
+            if (IsDisposed || Disposing)
+            {
+                return;
+            }
+
             SpeedTestRichTextBox.SelectionStart = SpeedTestRichTextBox.TextLength;
             SpeedTestRichTextBox.SelectionLength = 0;
 
@@ -743,5 +773,54 @@ public partial class ToolForm : Form
                 AppendText($"  [{result.Protocol}] 测试失败: {result.Message}\n\n", Color.Red);
             }
         }
+    }
+
+    private static bool TryParseIPv4Endpoint(string input, out string host, out int port)
+    {
+        host = string.Empty;
+        port = 0;
+
+        string[] parts = input.Split(':');
+        if (parts.Length != 2)
+        {
+            return false;
+        }
+
+        if (!IsStrictIPv4Address(parts[0]))
+        {
+            return false;
+        }
+
+        if (!int.TryParse(parts[1], out port) || port < 1 || port > 65535)
+        {
+            return false;
+        }
+
+        host = parts[0];
+        return true;
+    }
+
+    private static bool IsStrictIPv4Address(string value)
+    {
+        string[] parts = value.Split('.');
+        if (parts.Length != 4)
+        {
+            return false;
+        }
+
+        foreach (var part in parts)
+        {
+            if (part.Length == 0 || !int.TryParse(part, out int number) || number < 0 || number > 255)
+            {
+                return false;
+            }
+        }
+
+        return IPAddress.TryParse(value, out var address) && address.AddressFamily == AddressFamily.InterNetwork;
+    }
+
+    private bool IsToolFormClosed()
+    {
+        return _toolFormCts.IsCancellationRequested || IsDisposed || Disposing;
     }
 }

@@ -1,13 +1,38 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using Timer = System.Timers.Timer;
 
 namespace iris_n2n_launcher.Utils
 {
     public sealed class BackgroundEventManager : IDisposable
     {
-        private readonly ConcurrentDictionary<string, (Timer timer, Action action)> _events = new();
+        private sealed class EventData : IDisposable
+        {
+            public required Timer Timer { get; init; }
+            public required Action Action { get; init; }
+            public ManualResetEventSlim Completed { get; } = new(true);
+            public int IsExecuting;
+            public bool IsDisposed;
+
+            public void Dispose()
+            {
+                IsDisposed = true;
+                Timer.Stop();
+                Timer.Dispose();
+                Completed.Dispose();
+            }
+
+            public void DisposeTimer()
+            {
+                IsDisposed = true;
+                Timer.Stop();
+                Timer.Dispose();
+            }
+        }
+
+        private readonly ConcurrentDictionary<string, EventData> _events = new();
         private readonly object _lock = new();
         private bool _isRunning = false;
+        private bool _disposed = false;
         private static readonly LogHelper logHelper = LogHelper.Instance;
 
         public BackgroundEventManager() { }
@@ -29,43 +54,43 @@ namespace iris_n2n_launcher.Utils
             if (intervalMilliseconds <= 0)
                 throw new ArgumentException("Interval must be greater than 0", nameof(intervalMilliseconds));
 
+            EventData? oldEventData = null;
+
             lock (_lock)
             {
-                if (_events.ContainsKey(eventName))
+                ThrowIfDisposed();
+
+                if (_events.TryRemove(eventName, out oldEventData))
                 {
-                    RemoveEvent(eventName);
+                    oldEventData.IsDisposed = true;
+                    oldEventData.Timer.Stop();
                 }
 
                 var timer = new Timer
                 {
                     Interval = intervalMilliseconds,
-                    // AutoReset 默认为 true, 这将使计时器在每个间隔后持续触发。
-                    AutoReset = true
+                    // 回调完成后再启动下一轮，避免上一次执行过慢导致重入。
+                    AutoReset = false
+                };
+
+                var eventData = new EventData
+                {
+                    Timer = timer,
+                    Action = action
                 };
 
                 // 使用 Elapsed 事件，它在后台线程上触发
-                timer.Elapsed += (sender, e) =>
-                {
-                    try
-                    {
-                        if (_isRunning)
-                        {
-                            action();
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        logHelper.Error(ex);
-                    }
-                };
+                timer.Elapsed += (sender, e) => ExecuteEvent(eventData);
 
-                _events[eventName] = (timer, action);
+                _events[eventName] = eventData;
 
                 if (_isRunning)
                 {
                     timer.Start();
                 }
             }
+
+            DisposeEvent(oldEventData);
         }
 
         /// <summary>
@@ -74,14 +99,18 @@ namespace iris_n2n_launcher.Utils
         /// <param name="eventName">事件名称</param>
         public void RemoveEvent(string eventName)
         {
+            EventData? eventData = null;
+
             lock (_lock)
             {
-                if (_events.TryRemove(eventName, out var eventData))
+                if (_events.TryRemove(eventName, out eventData))
                 {
-                    eventData.timer.Stop();
-                    eventData.timer.Dispose();
+                    eventData.IsDisposed = true;
+                    eventData.Timer.Stop();
                 }
             }
+
+            DisposeEvent(eventData);
         }
 
         /// <summary>
@@ -89,14 +118,23 @@ namespace iris_n2n_launcher.Utils
         /// </summary>
         public void ClearAllEvents()
         {
+            List<EventData> events;
+
             lock (_lock)
             {
-                foreach (var (timer, action) in _events.Values)
-                {
-                    timer.Stop();
-                    timer.Dispose();
-                }
+                events = [.. _events.Values];
                 _events.Clear();
+
+                foreach (var eventData in events)
+                {
+                    eventData.IsDisposed = true;
+                    eventData.Timer.Stop();
+                }
+            }
+
+            foreach (var eventData in events)
+            {
+                DisposeEvent(eventData);
             }
         }
 
@@ -107,12 +145,17 @@ namespace iris_n2n_launcher.Utils
         {
             lock (_lock)
             {
+                ThrowIfDisposed();
+
                 if (!_isRunning)
                 {
                     _isRunning = true;
                     foreach (var eventData in _events.Values)
                     {
-                        eventData.timer.Start();
+                        if (!eventData.IsDisposed)
+                        {
+                            eventData.Timer.Start();
+                        }
                     }
                 }
             }
@@ -123,17 +166,25 @@ namespace iris_n2n_launcher.Utils
         /// </summary>
         public void StopAllEvents()
         {
+            List<EventData> events;
+
             lock (_lock)
             {
-                if (_isRunning)
+                if (!_isRunning)
                 {
-                    _isRunning = false;
-                    foreach (var eventData in _events.Values)
-                    {
-                        eventData.timer.Stop();
-                    }
+                    return;
+                }
+
+                _isRunning = false;
+                events = [.. _events.Values];
+
+                foreach (var eventData in events)
+                {
+                    eventData.Timer.Stop();
                 }
             }
+
+            WaitForEvents(events);
         }
 
         /// <summary>
@@ -146,7 +197,91 @@ namespace iris_n2n_launcher.Utils
 
         public void Dispose()
         {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _disposed = true;
+            StopAllEvents();
             ClearAllEvents();
+        }
+
+        private void ExecuteEvent(EventData eventData)
+        {
+            if (!_isRunning || eventData.IsDisposed)
+            {
+                return;
+            }
+
+            if (Interlocked.Exchange(ref eventData.IsExecuting, 1) == 1)
+            {
+                return;
+            }
+
+            eventData.Completed.Reset();
+
+            try
+            {
+                if (_isRunning && !eventData.IsDisposed)
+                {
+                    eventData.Action();
+                }
+            }
+            catch (Exception ex)
+            {
+                logHelper.Error(ex);
+            }
+            finally
+            {
+                Interlocked.Exchange(ref eventData.IsExecuting, 0);
+                eventData.Completed.Set();
+
+                if (_isRunning && !eventData.IsDisposed)
+                {
+                    try
+                    {
+                        eventData.Timer.Start();
+                    }
+                    catch (ObjectDisposedException)
+                    {
+
+                    }
+                }
+            }
+        }
+
+        private static void DisposeEvent(EventData? eventData)
+        {
+            if (eventData == null)
+            {
+                return;
+            }
+
+            if (eventData.Completed.Wait(TimeSpan.FromSeconds(2)))
+            {
+                eventData.Dispose();
+            }
+            else
+            {
+                eventData.DisposeTimer();
+            }
+        }
+
+        private static void WaitForEvents(IEnumerable<EventData> events)
+        {
+            foreach (var eventData in events)
+            {
+                eventData.Completed.Wait(TimeSpan.FromSeconds(2));
+            }
+        }
+
+        private void ThrowIfDisposed()
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(nameof(BackgroundEventManager));
+            }
         }
     }
 }
